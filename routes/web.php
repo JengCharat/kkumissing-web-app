@@ -8,6 +8,9 @@ Route::get('/', function () {
     return view('welcome-auth');
 });
 
+Route::get('/index', [index_controller::class, 'index']);
+
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
