@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+         <script src ="{{ asset('js/script.js') }}" > </script>
+    </head>
+    <body>
+       <h1>firstpage</h1>
+        <h2>left room</h2>
+        <table border="1">
+            <tbody>
+                @foreach ($rooms->chunk(6) as $room)
+                <tr>
+                    @foreach ($room as $item)
+                        @if ($item -> state == "Available")
+                        <td><button style="background: green;" type="button" onclick="select_this_room('{{ $item->roomNumber }}')">{{ $item->roomNumber }}</button></td>
+                        @else
+                        <td  style="background:red;">{{ $item->roomNumber }}</td>
+                        @endif
+                    @endforeach
+                </tr>
+                @endforeach
+           </tbody>
+        </table>
+
+        <h2>right room</h2>
+        <table id = "test">
+            <tr>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+            </tr>
+            <tr>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+                <td>test</td>
+            </tr>
+            </table>
+
+
+           <form method="POST" action="/hire">
+               @csrf
+               <h1 id = "room_ID_select"></h1>
+                <input type="hidden" name="roomNumber" id = "room_ID_select2" value="">
+                <button type="button">BOOK NOW</button>
+                <br>
+                <button type="button">รายวัน</button>
+                <button type="button">รายเดือน</button>
+                <h1>checkin</h1>
+                <input type="date" name = "checkin">
+                <h1>checkout</h1>
+                <input type="date" name = "checkout">
+
+                <h1>ชื่อผู้เช่่า</h1>
+                <input type="text" name = "tenantName">
+                <h1>เบอร์่</h1>
+                <input type="tel" name = "tenantTel">
+                <h1>payment</h1>
+                <button type="button">qr code</button>
+                <button type="button">เงินสด</button>
+                <h1>upload slip</h1>
+                <input type="file">
+                <br>
+                <button type="submit">finish submit</button>
+           </form>
+    </body>
+</html>
