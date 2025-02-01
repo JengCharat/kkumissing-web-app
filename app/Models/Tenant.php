@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Tenant extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'tenantID',
+        'tenantName',
+        'tenant_type',
+        'telNumber',
+    ];
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class, 'tenant_id', 'tenantID');
+    }
+
+    public function meterReadings()
+    {
+        return $this->hasOne(MeterReading::class, 'tenant_id', 'tenantID');
+    }
+
+    public function bookings()
+    {
+        return $this->hasOne(Booking::class, 'tenant_id', 'tenantID');
+    }
+}
