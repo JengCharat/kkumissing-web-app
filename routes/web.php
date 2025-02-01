@@ -3,12 +3,14 @@
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\Routing\Router;
+use App\Http\Controllers\index_controller;
 
 Route::get('/', function () {
     return view('welcome-auth');
 });
 
 Route::get('/index', [index_controller::class, 'index']);
+Route::post('/hire', [index_controller::class, 'hire']);
 
 
 Route::middleware([

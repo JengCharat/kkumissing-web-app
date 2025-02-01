@@ -22,6 +22,8 @@ class Booking extends Model
         'due_date',
     ];
 
+    protected $primaryKey = 'bookingID';
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'tenantID');
