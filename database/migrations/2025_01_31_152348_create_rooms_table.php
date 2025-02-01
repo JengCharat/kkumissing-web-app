@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->id('roomID');
             $table->string('roomNumber');
-            $table->string('status')->nullable(); // e.g., 'available', 'occupied', 'cleaning'
+            $table->string('status')->default('available'); // e.g., 'available', 'occupied', 'cleaning'
             $table->decimal('daily_rate', 10, 2)->nullable();
             $table->decimal('water_price', 10, 2)->nullable();
             $table->decimal('electricity_price', 10, 2)->nullable();
