@@ -16,6 +16,8 @@ class Tenant extends Model
         'telNumber',
     ];
 
+    protected $primaryKey = 'tenantID';
+
     public function contracts()
     {
         return $this->hasMany(Contract::class, 'tenant_id', 'tenantID');

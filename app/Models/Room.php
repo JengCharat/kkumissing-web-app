@@ -19,6 +19,8 @@ class Room extends Model
         'overdue_fee_rate',
     ];
 
+    protected $primaryKey = 'roomID';
+
     public function contracts()
     {
         return $this->hasOne(Contract::class, 'room_id', 'roomID');
