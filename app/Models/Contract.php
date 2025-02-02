@@ -19,6 +19,8 @@ class Contract extends Model
         'end_date',
     ];
 
+    protected $primaryKey = 'contractID';
+
     public function room()
     {
         return $this->belongsTo(Room::class, 'room_id', 'roomID');

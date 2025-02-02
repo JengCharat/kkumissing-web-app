@@ -62,17 +62,16 @@
         <div id = "monthly_form" class="monthly_form" style = "display:none">
             <h1>monthly</h1>
 
-            <form method="POST" action="/hire">
+            <form method="POST" action="/hire" enctype="multipart/form-data">
             @csrf
 
                 <input type="hidden" name="roomNumber" id="room_ID_select_monthly" value="">
 
                 <input type="hidden" name = "tenant_type" value="monthly">
-                <h1>checkin</h1>
-                <input type="date" name="checkin">
-                <h1>checkout</h1>
-                <input type="date" name="checkout">
-
+                <h1>deudate</h1>
+                <input type="date" name="due_date">
+                <h1>deposit</h1>
+                <input type="text" name = "deposit">
                 <h1>ชื่อผู้เช่า</h1>
                 <input type="text" name="tenantName">
                 <h1>เบอร์</h1>
@@ -81,7 +80,7 @@
                 <button type="button">qr code</button>
                 <button type="button">เงินสด</button>
                 <h1>upload slip</h1>
-                <input type="file">
+                <input type="file" name="img">
                 <br>
                 <button type="submit">finish submit</button>
 
