@@ -77,8 +77,9 @@
                 <h1>เบอร์</h1>
                 <input type="tel" name="tenantTel">
                 <h1>payment</h1>
-                <button type="button">qr code</button>
+                <button type="button" onclick = "show_qr()">qr code</button>
                 <button type="button">เงินสด</button>
+                <img style = "display:none;" src="{{asset('images/rickroll.png')}}" alt="qr img" id = "qr_img_monthly">
                 <h1>upload slip</h1>
                 <input type="file" name="img">
                 <br>
@@ -105,8 +106,10 @@
                 <h1>เบอร์</h1>
                 <input type="tel" name="tenantTel">
                 <h1>payment</h1>
-                <button type="button">qr code</button>
+                <button type="button" onclick = "show_qr()">qr code</button>
                 <button type="button">เงินสด</button>
+
+                <img style = "display:none;" src="{{asset('images/rickroll.png')}}" alt="qr img" id = "qr_img_daily">
                 <h1>upload slip</h1>
                 <input type="file">
                 <br>

@@ -21,3 +21,18 @@ function monthly_form() {
     document.getElementById("daily_form").style.display = "none";
     document.getElementById("monthly_form").style.display = "block";
 }
+function show_qr() {
+    var x = document.getElementById("qr_img_monthly");
+    var y = document.getElementById("qr_img_daily");
+    if (x.style.display == "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+
+    if (y.style.display == "none") {
+        y.style.display = "block";
+    } else {
+        y.style.display = "none";
+    }
+}
