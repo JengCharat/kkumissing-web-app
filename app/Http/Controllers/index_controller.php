@@ -28,6 +28,9 @@ class index_controller extends Controller
         ]);
 
 
+
+
+
         $tenant = new Tenant();
         $tenant->tenantName = $request->tenantName;
         $tenant->tenant_type = $request->tenant_type;
@@ -42,10 +45,19 @@ class index_controller extends Controller
         $contract->end_date = $request->checkout;
         $contract->room_id = $room->roomID;
         $contract->tenant_id = $tenant->tenantID;
-        $contract_id = $contract->contractID;
         $contract->save();
+        $contract_id = $contract->contractID;
+        $request->validate([
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        $file = $request->file('img');
 
-        // ใช้ Eloquent ในการแทรกข้อมูล
+        $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
+        $path = $file->storeAs('upload', $filename, 'public');
+        $file->store('upload', 'public');
+
+        $contract->contract_file = $path;
+        $contract->save();
 
 
 
@@ -53,9 +65,26 @@ class index_controller extends Controller
         $booking->tenant_id =$tenant->tenantID;
         $booking->check_in = $request->checkin;
         $booking->check_out = $request->checkout;
+        $booking->due_date = $request->due_date;
+        $booking->deposit =  $request->deposit;
         $booking->save();
         return redirect('/index');
 
 
     }
+    public function showImage($contractID)
+{
+    $contract = Contract::find($contractID); // ค้นหา contract ตาม ID
+
+    if (!$contract || !$contract->contract_file) {
+        abort(404); // ถ้าไม่เจอไฟล์ ให้แสดง 404
+    }
+
+    // คืนค่า URL ของไฟล์รูปภาพ
+    return response()->file(storage_path('app/public/' . $contract->contract_file));
+        // /////////////how to show
+        // Route::get('/contract/image/{id}', [ContractController::class, 'showImage']);
+        // <img src="{{ url('/contract/image/' . $contract->id) }}" alt="Contract Image">
+
+}
 }
