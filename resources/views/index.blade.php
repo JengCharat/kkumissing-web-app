@@ -91,7 +91,7 @@
 
         <div id = "daily_form" class="daily_form" style = "display:none">
             <h1>daily</h1>
-            <form method="POST" action="/hire">
+            <form method="POST" action="/hire" enctype="multipart/form-data">
             @csrf
 
                 <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
@@ -111,7 +111,7 @@
 
                 <img style = "display:none;" src="{{asset('images/rickroll.png')}}" alt="qr img" id = "qr_img_daily">
                 <h1>upload slip</h1>
-                <input type="file">
+                <input type="file" name = "img">
                 <br>
                 <button type="submit">finish submit</button>
 
