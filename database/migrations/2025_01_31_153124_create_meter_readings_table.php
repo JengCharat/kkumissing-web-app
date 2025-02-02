@@ -15,11 +15,7 @@ return new class extends Migration
             $table->id('meterID');
             $table->foreignId('room_id')->constrained('rooms', 'roomID'); // Foreign key to rooms table
             $table->foreignId('tenant_id')->constrained('tenants', 'tenantID'); // Foreign key to tenants table
-            $table->date('reading_date')->nullable();
-            $table->decimal('water_meter', 10, 2)->nullable();
-            $table->decimal('electricity_meter', 10, 2)->nullable();
-            $table->date('start_date')->nullable(); // refers to start reading date
-            $table->date('end_date')->nullable();   // refers to end reading date
+            $table->foreignId('meter_details_id')->constrained('meter_details', 'meter_detailID'); // Foreign key to meter_details table
             $table->timestamps();
         });
     }
