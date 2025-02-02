@@ -45,16 +45,17 @@ class index_controller extends Controller
         $contract->end_date = $request->checkout;
         $contract->room_id = $room->roomID;
         $contract->tenant_id = $tenant->tenantID;
+        $contract->contract_date = today();
         $contract->save();
         $contract_id = $contract->contractID;
         $request->validate([
-            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif',
         ]);
         $file = $request->file('img');
 
         $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
         $path = $file->storeAs('upload', $filename, 'public');
-        $file->store('upload', 'public');
+        // $file->store('upload', 'public');
 
         $contract->contract_file = $path;
         $contract->save();
@@ -63,6 +64,7 @@ class index_controller extends Controller
 
         $booking = new Booking();
         $booking->tenant_id =$tenant->tenantID;
+        $booking->booking_type = $request->tenant_type;
         $booking->check_in = $request->checkin;
         $booking->check_out = $request->checkout;
         $booking->due_date = $request->due_date;
