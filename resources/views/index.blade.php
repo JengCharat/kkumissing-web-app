@@ -64,6 +64,10 @@
 
             <form method="POST" action="/hire">
             @csrf
+
+                <input type="hidden" name="roomNumber" id="room_ID_select_monthly" value="">
+
+                <input type="hidden" name = "tenant_type" value="monthly">
                 <h1>checkin</h1>
                 <input type="date" name="checkin">
                 <h1>checkout</h1>
@@ -89,6 +93,9 @@
             <h1>daily</h1>
             <form method="POST" action="/hire">
             @csrf
+
+                <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
+                <input type="hidden" name = "tenant_type" value="daily">
                 <h1>checkin</h1>
                 <input type="date" name="checkin">
                 <h1>checkout</h1>
