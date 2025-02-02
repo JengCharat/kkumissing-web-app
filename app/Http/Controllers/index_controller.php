@@ -30,7 +30,7 @@ class index_controller extends Controller
 
         $tenant = new Tenant();
         $tenant->tenantName = $request->tenantName;
-        $tenant->tenant_type = "daily";
+        $tenant->tenant_type = $request->tenant_type;
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
 
