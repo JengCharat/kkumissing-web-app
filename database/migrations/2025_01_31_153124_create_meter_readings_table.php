@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('meter_readings', function (Blueprint $table) {
             $table->id('meterID');
             $table->foreignId('room_id')->constrained('rooms', 'roomID'); // Foreign key to rooms table
-            $table->foreignId('tenant_id')->constrained('tenants', 'tenantID'); // Foreign key to tenants table
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants', 'tenantID');
             $table->foreignId('meter_details_id')->constrained('meter_details', 'meter_detailID'); // Foreign key to meter_details table
             $table->timestamps();
         });
