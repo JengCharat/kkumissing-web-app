@@ -42,6 +42,8 @@ class index_controller extends Controller
         if($request->tenant_type == "monthly"){
             $users = User::find($roomNumber);
             $tenant->user_id_tenant = $users -> id;
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
         }
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
