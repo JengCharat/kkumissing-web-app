@@ -32,4 +32,7 @@ class Tenant extends Model
     {
         return $this->hasOne(Booking::class, 'tenant_id', 'tenantID');
     }
+    public function users(){
+        return $this->belongsTo(User::class,'user_id_tenant','id');
+    }
 }

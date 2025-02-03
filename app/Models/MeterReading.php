@@ -12,12 +12,13 @@ class MeterReading extends Model
     protected $fillable = [
         'meterID',
         'room_id',
+        'tenant_id',
         'reading_date',
-        'water_meter',
-        'electricity_meter',
+        'meter_details_id',
         'start_date',
         'end_date',
     ];
+    protected $primaryKey = 'meterID';
 
     public function room()
     {
@@ -27,5 +28,9 @@ class MeterReading extends Model
     public function tenant()
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'tenantID');
+    }
+    public function meterdetails() //gggg
+    {
+        return $this->belongsTo(Tenant::class, 'meter_details_id', 'meter_detailID');
     }
 }

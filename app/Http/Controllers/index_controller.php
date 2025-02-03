@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Room;
-use App\Models\Meter_reading;
+use App\Models\MeterReading;
 use App\Models\Tenant;
 use App\Models\Contract;
-
+use App\Models\User;
 use App\Models\Booking;
 class index_controller extends Controller
 {
@@ -23,6 +23,9 @@ class index_controller extends Controller
     public function hire(Request $request){
         $roomNumber = $request->roomNumber;
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
+        if($room->status == "Not Available"){
+            abort(404);
+        }
         $room->update([
             'status' => "Not Available",
         ]);
@@ -31,11 +34,33 @@ class index_controller extends Controller
 
 
 
+
         $tenant = new Tenant();
         $tenant->tenantName = $request->tenantName;
         $tenant->tenant_type = $request->tenant_type;
+        if($request->tenant_type == "monthly"){
+            $users = User::find($roomNumber);
+            $tenant->user_id_tenant = $users -> id;
+        }
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
+
+        $meter_reading = MeterReading::where('room_id',$room->roomID)->firstOrFail();
+        $meter_reading->tenant_id = $tenant->tenantID;
+        $meter_reading->save();
+        // if ($meter_reading) {
+        //     // return $meter_reading->tenant_id;
+        //     $meter_reading->update([
+        //         // 'tenant_id' => $tenant->tenant_id,
+        //         'tenant_id' => 1,
+        //
+        //     ]);
+        // }
+        // else{
+        //     abort(404);
+        // }
+
+
 
 
 
@@ -61,7 +86,6 @@ class index_controller extends Controller
         $contract->save();
 
 
-
         $booking = new Booking();
         $booking->tenant_id =$tenant->tenantID;
         $booking->booking_type = $request->tenant_type;
@@ -70,9 +94,9 @@ class index_controller extends Controller
         $booking->due_date = $request->due_date;
         $booking->deposit =  $request->deposit;
         $booking->save();
+
+
         return redirect('/index');
-
-
     }
     public function showImage($contractID)
 {

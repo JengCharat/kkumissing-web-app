@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id('tenantID');
+            $table->foreignId('user_id_tenant')->constrained('users', 'id'); // Foreign key to rooms table
             $table->string('tenantName');
             $table->string('tenant_type')->nullable(); // e.g., 'individual', 'company'
             $table->string('telNumber')->nullable();
