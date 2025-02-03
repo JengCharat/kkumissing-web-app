@@ -25,6 +25,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
+    protected $primaryKey = 'name';
     protected $fillable = [
         'name',
         'email',
@@ -36,6 +38,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -68,5 +71,10 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->usertype === 'admin';
+    }
+
+    public function tenant()
+    {
+        return $this->hasOne(User::class,'user_id_tenant','id');
     }
 }
