@@ -14,7 +14,7 @@
     <h2>left room</h2>
     <table border="1">
         <tbody>
-            @foreach ($rooms->chunk(6) as $room)
+            @foreach ($Lrooms->chunk(6) as $room)
             <tr>
                 @foreach ($room as $item)
                 @if ($item -> status == "Available")
@@ -30,25 +30,21 @@
     </table>
 
     <h2>right room</h2>
-    <table id="test">
-        <tr>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-        </tr>
-        <tr>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-        </tr>
+    <table border="1">
+        <tbody>
+            @foreach ($Rrooms->chunk(6) as $room)
+            <tr>
+                @foreach ($room as $item)
+                @if ($item -> status == "Available")
+                <td><button style="background: green;" type="button"
+                        onclick="select_this_room('{{ $item->roomNumber }}')">{{ $item->roomNumber }}</button></td>
+                @else
+                <td style="background:red;">{{ $item->roomNumber }}</td>
+                @endif
+                @endforeach
+            </tr>
+            @endforeach
+        </tbody>
     </table>
 
 

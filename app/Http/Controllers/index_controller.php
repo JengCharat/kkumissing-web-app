@@ -13,8 +13,9 @@ class index_controller extends Controller
 {
     //
     public function index(){
-        $rooms = Room::all();
-        return view('index',compact('rooms'));
+        $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
+        $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
+        return view('index',compact('Lrooms','Rrooms'));
     }
     // public function hire(Request $request){
     //     Room::create([
