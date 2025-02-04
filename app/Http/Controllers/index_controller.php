@@ -40,7 +40,8 @@ class index_controller extends Controller
         $tenant->tenantName = $request->tenantName;
         $tenant->tenant_type = $request->tenant_type;
         if($request->tenant_type == "monthly"){
-            $users = User::find($roomNumber);
+            // $users = User::find($roomNumber);
+            $users = User::where('name', $request->roomNumber)->first();
             $tenant->user_id_tenant = $users -> id;
             $users->password = bcrypt($request->tenantTel);
             $users->save();
