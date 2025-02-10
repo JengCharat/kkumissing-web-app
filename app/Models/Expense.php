@@ -11,9 +11,9 @@ class Expense extends Model
 
     protected $fillable = [
         'expenseID',
-        'unit_price',
-        'water',
-        'electricity',
+        'room_id',
+        'unit_price_water',
+        'unit_price_electricity',
     ];
 
     // If Expense is related to Room (based on ERD and 'record' relationship)

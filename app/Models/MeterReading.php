@@ -29,8 +29,8 @@ class MeterReading extends Model
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'tenantID');
     }
-    public function meterdetails() //gggg
+    public function meterdetails()
     {
-        return $this->belongsTo(Tenant::class, 'meter_details_id', 'meter_detailID');
+        return $this->belongsTo(MeterDetails::class, 'meter_details_id', 'meter_detailID');
     }
 }
