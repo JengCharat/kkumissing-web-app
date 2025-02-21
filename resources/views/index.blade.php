@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    <!-- test upload myname -->
     <h1>firstpage</h1>
     <h2>left room</h2>
     <table border="1">
