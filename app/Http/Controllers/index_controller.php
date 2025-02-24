@@ -39,13 +39,22 @@ class index_controller extends Controller
         $tenant = new Tenant();
         $tenant->tenantName = $request->tenantName;
         $tenant->tenant_type = $request->tenant_type;
+
         if($request->tenant_type == "monthly"){
-            // $users = User::find($roomNumber);
+            // For monthly tenants, use the room's user
             $users = User::where('name', $request->roomNumber)->first();
-            $tenant->user_id_tenant = $users -> id;
+            $tenant->user_id_tenant = $users->id;
             $users->password = bcrypt($request->tenantTel);
             $users->save();
+        } else {
+            // For daily tenants, use the admin user
+            $adminUser = User::where('email', 'admin@gmail.com')->first();
+            if (!$adminUser) {
+                abort(500, 'Admin user not found');
+            }
+            $tenant->user_id_tenant = $adminUser->id;
         }
+
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
 
