@@ -36,4 +36,33 @@ class Room extends Model
         return $this->hasOne(Expense::class, 'room_id', 'roomID');
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function bill()
+    {
+        return $this->belongsTo(Bill::class, 'daily_rate', 'rent');
+    }
+
+    public function billWaterPrice()
+    {
+        return $this->belongsTo(Bill::class, 'water_price', 'water_price');
+    }
+
+    public function billElectricityPrice()
+    {
+        return $this->belongsTo(Bill::class, 'electricity_price', 'electricity_price');
+    }
 }

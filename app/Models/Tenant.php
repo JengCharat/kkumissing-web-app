@@ -35,4 +35,21 @@ class Tenant extends Model
     public function users(){
         return $this->belongsTo(User::class,'user_id_tenant','id');
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function bill()
+    {
+        return $this->belongsTo(Bill::class, 'TenantID', 'tenant_id');
+    }
 }

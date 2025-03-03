@@ -40,6 +40,8 @@ class DashboardController extends Controller
             $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
             $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
             $rooms->save();
+            $bills->total_price = $rooms->water_price + ($rooms->electricity_price)
+            //TODO:add overdue price
         }
         //test
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
