@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Room;
 use App\Models\Expense;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use Illuminate\Http\Request;
-
+use App\Models\Bill;
 class AdminController extends Controller
 {
     public function index()
@@ -21,10 +21,17 @@ class AdminController extends Controller
         $unit_price_water = $latestExpense ? $latestExpense->unit_price_water : null;
         $unit_price_electricity = $latestExpense ? $latestExpense->unit_price_electricity : null;
 
+        // $bills = Bill::all();
+
+        $bills = DB::table('bills')
+            ->join('rooms', 'bills.roomID', '=', 'rooms.roomID') // JOIN กับตาราง rooms
+            ->join('tenants', 'bills.tenant_id', '=', 'tenants.tenantID')
+            ->select('bills.billID', 'rooms.roomID', 'rooms.daily_rate','tenants.tenantName')
+            ->get();
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
 
-        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings'));
+        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings','bills'));
     }
 
     public function updateUnitPrices(Request $request)
