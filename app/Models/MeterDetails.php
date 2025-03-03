@@ -9,6 +9,8 @@ class MeterDetails extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'meter_detailID';
+
     protected $fillable = [
         'meter_detailID',
         'water_meter_start',
