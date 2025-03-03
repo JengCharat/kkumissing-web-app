@@ -12,9 +12,7 @@ class Bill extends Model
     use HasFactory;
     protected $fillable = [
         'billID',
-        'rent',
-        'water_price',
-        'electricity_price',
+        'roomID',
         'tenant_id',
         'total_price'
     ];
@@ -23,16 +21,7 @@ class Bill extends Model
 
     public function rooms()
     {
-        return $this->hasOne(Room::class, 'daily_rate', 'rent');
-    }
-    public function roomWaterPrice()
-    {
-        return $this->hasOne(Room::class, 'water_price', 'water_price');
-    }
-
-    public function roomElectricityPrice()
-    {
-        return $this->hasOne(Room::class, 'electricity_price', 'electricity_price');
+        return $this->hasOne(Room::class, 'roomID', 'roomID');
     }
     public function tenants()
     {

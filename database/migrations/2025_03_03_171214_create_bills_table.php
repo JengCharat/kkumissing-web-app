@@ -15,11 +15,9 @@ return new class extends Migration
         //     $table->id();
         //     $table->timestamps();
 
-        Schema::create('meter_readings', function (Blueprint $table) {
+        Schema::create('bills', function (Blueprint $table) {
             $table->id('billID');
-            $table->foreignId('rent')->constrained('rooms', 'daily_rate'); // Foreign key to rooms table
-            $table->foreignId('water_price')->constrained('rooms', 'water_price'); // Foreign key to rooms table
-            $table->foreignId('electricity_price')->constrained('rooms', 'electricity_price'); // Foreign key to rooms table
+            $table->foreignId('roomID')->nullable()->constrained('rooms', 'roomID');
             $table->foreignId('tenant_id')->nullable()->constrained('tenants', 'tenantID');
             $table->decimal('total_price',10,2)->nullable();
             $table->timestamps();
