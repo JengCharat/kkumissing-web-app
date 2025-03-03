@@ -41,6 +41,7 @@ class DashboardController extends Controller
             $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
             $rooms->save();
         }
+        //test
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
     }
 }
