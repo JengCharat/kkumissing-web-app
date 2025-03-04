@@ -26,7 +26,8 @@ class AdminController extends Controller
         $bills = DB::table('bills')
             ->join('rooms', 'bills.roomID', '=', 'rooms.roomID') // JOIN กับตาราง rooms
             ->join('tenants', 'bills.tenant_id', '=', 'tenants.tenantID')
-            ->select('bills.billID','bills.total_price', 'rooms.roomID', 'rooms.daily_rate','tenants.tenantName')
+            ->leftJoin('bookings','bills.tenant_id','=','bookings.tenant_id')
+            ->select('bills.billID','bills.total_price','bills.status', 'rooms.roomID', 'rooms.daily_rate','rooms.overdue_fee_rate','tenants.tenantName','bookings.damage_fee')
             ->get();
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();

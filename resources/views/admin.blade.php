@@ -68,16 +68,41 @@
             <div id="price_update_form" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Update Unit Prices</h3>
-                    @foreach ($bills as $bill)
-                        <h1>current name</h1>
 
-                        {{$bill->tenantName}}
+                    <h1>current name</h1>
+                    {{-- {{$bills->tenantName}} --}}
+                    <table class="w-full border-collapse border border-gray-300 shadow-lg rounded-lg">
+                        <thead>
+                            <tr>
+                                <th class="border border-gray-300 px-4 py-2">Bill ID</th>
+                                <th class="border border-gray-300 px-4 py-2">Room ID</th>
+                                <th class="border border-gray-300 px-4 py-2">Daily Rate</th>
+                                <th class="border border-gray-300 px-4 py-2">Total Price</th>
+                                <th class="border border-gray-300 px-4 py-2">Overdue Fee Rate</th>
+                                <th class="border border-gray-300 px-4 py-2">Damage Fee</th>
+                                <th class="border border-gray-300 px-4 py-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bills as $bill)
+                                <tr class=" hover:bg-gray-100 transition duration-200">
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->billID}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->roomID}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->daily_rate}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold text-green-600">{{$bill->total_price}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->overdue_fee_rate}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center text-red-500">{{$bill->damage_fee ?? 'N/A'}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">
+                                        <span class="px-3 py-1 rounded-full text-white text-xs font-bold
+                                            {{ $bill->status == 'paid' ? 'bg-green-500' : ($bill->status == 'pending' ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                            {{$bill->status}}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                         <br>
-                        {{$bill->billID}}
-                        {{$bill->roomID}}
-                        {{$bill->daily_rate}}
-                        {{$bill->total_price}}
-                    @endforeach
                     @if (session('success'))
                         <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">
                             {{ session('success') }}

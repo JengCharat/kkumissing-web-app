@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('roomID')->nullable()->constrained('rooms', 'roomID');
             $table->foreignId('tenant_id')->nullable()->constrained('tenants', 'tenantID');
             $table->decimal('total_price',10,2)->nullable();
+            $table->string('status')->default('unpaid');
             $table->timestamps();
         });
         // });
