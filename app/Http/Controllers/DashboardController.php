@@ -52,7 +52,8 @@ class DashboardController extends Controller
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
     }
     function upload_slip(Request $request){
-        $bills = Bill::where('roomID',7)->first();
+        $bills = Bill::where('roomID',$request->roomID)->first();
+        echo($request->roomID);
 
         $request->validate([
             'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',

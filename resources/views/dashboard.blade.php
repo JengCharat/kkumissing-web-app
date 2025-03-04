@@ -33,6 +33,7 @@
                         <p class="text-2xl font-bold text-blue-800">฿ {{ number_format($rooms->water_price + $rooms->electricity_price, 2) }}</p>
                         <form method = "post" action="/dashboard" enctype="multipart/form-data">
                             @csrf
+                            <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
                             <input type="file" name = "slip_image">
                             <button>PAY</button>
                         </form>
