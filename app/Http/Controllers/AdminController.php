@@ -3,13 +3,149 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
+use App\Models\User;
 use App\Models\Expense;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Actions\Fortify\UpdateUserPassword;
 
 class AdminController extends Controller
 {
+    /**
+     * Room management methods
+     */
+    public function rooms()
+    {
+        // Get rooms with L and R prefixes
+        $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
+        $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
+
+        return view('admin.rooms', compact('Lrooms', 'Rrooms'));
+    }
+
+    /**
+     * Monthly rooms management
+     */
+    public function monthlyRooms()
+    {
+        // Get rooms with L and R prefixes
+        $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
+        $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
+
+        return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms'));
+    }
+
+    /**
+     * Daily rooms management
+     */
+    public function dailyRooms()
+    {
+        // Get rooms with L and R prefixes
+        $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
+        $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
+
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms'));
+    }
+
+    /**
+     * Pending payments management
+     */
+    public function pendingPayments()
+    {
+        return view('admin.pending-payments');
+    }
+
+    /**
+     * Completed payments management
+     */
+    public function completedPayments()
+    {
+        return view('admin.completed-payments');
+    }
+
+    /**
+     * Monthly tenants management
+     */
+    public function monthlyTenants()
+    {
+        return view('admin.monthly-tenants');
+    }
+
+    /**
+     * Daily tenants management
+     */
+    public function dailyTenants()
+    {
+        return view('admin.daily-tenants');
+    }
+
+    /**
+     * Apartment information management
+     */
+    public function apartmentInfo()
+    {
+        return view('admin.apartment-info');
+    }
+
+    /**
+     * Room types management
+     */
+    public function roomTypes()
+    {
+        return view('admin.room-types');
+    }
+
+    /**
+     * Utilities management
+     */
+    public function utilities()
+    {
+        // Get current unit prices
+        $latestExpense = Expense::orderBy('created_at', 'desc')->first();
+        $unit_price_water = $latestExpense ? $latestExpense->unit_price_water : null;
+        $unit_price_electricity = $latestExpense ? $latestExpense->unit_price_electricity : null;
+
+        return view('admin.utilities', compact('unit_price_water', 'unit_price_electricity'));
+    }
+
+    /**
+     * Admin settings
+     */
+    public function settings()
+    {
+        $admin = auth()->user();
+        return view('admin.settings', compact('admin'));
+    }
+
+    /**
+     * Update admin profile information
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $updater = new UpdateUserProfileInformation();
+        $updater->update($user, $request->all());
+
+        return redirect()->route('admin.settings')->with('success', 'ข้อมูลส่วนตัวถูกอัพเดทเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Update admin password
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $updater = new UpdateUserPassword();
+        $updater->update($user, $request->all());
+
+        return redirect()->route('admin.settings')->with('success', 'รหัสผ่านถูกอัพเดทเรียบร้อยแล้ว');
+    }
+
     public function index()
     {
         // Get rooms with L and R prefixes
