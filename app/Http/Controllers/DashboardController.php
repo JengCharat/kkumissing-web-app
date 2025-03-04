@@ -9,6 +9,7 @@ use App\Models\Room;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use App\Models\Expense;
+use App\Models\Bill;
 class DashboardController extends Controller
 {
     //
@@ -34,15 +35,18 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'Meter details not found');
         }
 
-        $expense = Expense::where('expenseID', 1)->first();
+        $expense = Expense::where('room_id', $rooms->roomID)->first();
 
+        $bills = Bill::where('roomID',$rooms->roomID)->first();
         if ($expense) {
+        // if (True) {
             $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
             $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
             $rooms->save();
+
+            //TODO:add overdue price
             $bills->total_price = $rooms->water_price + ($rooms->electricity_price);
             $bills->save();
-            //TODO:add overdue price
         }
         //test
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
