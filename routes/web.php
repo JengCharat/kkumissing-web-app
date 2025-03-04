@@ -13,7 +13,7 @@ Route::get('/welcome', function () {
 Route::get('/', [index_controller::class, 'index']);
 Route::post('/hire', [index_controller::class, 'hire']);
 
-Route::post('/dashboard', [DashboardController::class, 'upload_slip']);
+// Route::post('/dashboard', [DashboardController::class, 'upload_slip']);
 
 
 Route::middleware([

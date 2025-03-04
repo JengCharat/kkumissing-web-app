@@ -35,21 +35,23 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'Meter details not found');
         }
 
-        $expense = Expense::where('room_id', $rooms->roomID)->first();
-
-        $bills = Bill::where('roomID',$rooms->roomID)->first();
-        if ($expense) {
-        // if (True) {
-            $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
-            $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
-            $rooms->save();
-
-            //TODO:add overdue price
-            $bills->total_price = $rooms->water_price + ($rooms->electricity_price);
-            $bills->save();
-        }
+        // $expense = Expense::where('room_id', $rooms->roomID)->first();
+        //
+        // $bills = Bill::where('roomID',$rooms->roomID)->first();
+        // if ($expense) {
+        // // if (True) {
+        //     $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
+        //     $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
+        //     $rooms->save();
+        //
+        //     //TODO:add overdue price
+        //     $bills->total_price = $rooms->water_price + ($rooms->electricity_price);
+        //     $bills->save();
+        // }
         //test
-        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
+        $bills = Bill::where('roomID',$rooms->roomID)->first();
+
+        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','bills'));
     }
     function upload_slip(Request $request){
         $bills = Bill::where('roomID',$request->roomID)->first();
@@ -67,7 +69,7 @@ class DashboardController extends Controller
         $bills->status = "paid";
         $bills->slip_file = $path;
         $bills->save();
-        return redirect('dashboard');
+        return redirect('dashboard',compact('bills'));
 
     }
 }

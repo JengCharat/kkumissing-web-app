@@ -37,6 +37,7 @@
                             <input type="file" name = "slip_image">
                             <button>PAY</button>
                         </form>
+                        {{$bills->status}}
                     </div>
                     <p class="text-sm text-blue-600">Please make your payment before the due date to avoid late fees.</p>
                 </div>
