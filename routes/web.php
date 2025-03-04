@@ -13,6 +13,8 @@ Route::get('/welcome', function () {
 Route::get('/', [index_controller::class, 'index']);
 Route::post('/hire', [index_controller::class, 'hire']);
 
+Route::post('/dashboard', [DashboardController::class, 'upload_slip']);
+
 
 Route::middleware([
     'auth:sanctum',
@@ -20,6 +22,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard', [DashboardController::class, 'upload_slip']);
 
     // Admin routes - protected by auth and admin check
     Route::middleware(['auth:sanctum'])->group(function () {

@@ -27,7 +27,7 @@ class AdminController extends Controller
             ->join('rooms', 'bills.roomID', '=', 'rooms.roomID') // JOIN กับตาราง rooms
             ->join('tenants', 'bills.tenant_id', '=', 'tenants.tenantID')
             ->leftJoin('bookings','bills.tenant_id','=','bookings.tenant_id')
-            ->select('bills.billID','bills.total_price','bills.status', 'rooms.roomID', 'rooms.daily_rate','rooms.overdue_fee_rate','tenants.tenantName','bookings.damage_fee')
+            ->select('bills.billID','bills.total_price','bills.status', 'rooms.roomNumber', 'rooms.daily_rate','rooms.overdue_fee_rate','tenants.tenantName','bookings.damage_fee')
             ->get();
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
@@ -100,6 +100,28 @@ class AdminController extends Controller
         // Update meter reading with meter details ID
         $meterReading->meter_details_id = $meterDetails->meter_detailID;
         $meterReading->save();
+
+
+
+        $expense = Expense::where('room_id', $room->roomID)->first();
+
+        $bills = Bill::where('roomID',$room->roomID)->first();
+        if ($expense) {
+        // if (True) {
+            $room->water_price = (($meterDetails ->water_meter_end) - ($meterDetails ->water_meter_start)) * $expense->unit_price_water;
+            $room->electricity_price = (($meterDetails ->electricity_meter_end) - ($meterDetails->electricity_meter_start)) * $expense->unit_price_electricity;
+            $room->save();
+        }
+
+        $bill = new Bill();
+        $bill->roomID = $room->roomID;
+        $bill->tenant_id = $meterReading->tenant_id;
+        $bill->total_price = $room->water_price + ($room->electricity_price);
+        $bill->save();
+
+
+
+
 
         return redirect()->back()->with('success', 'Meter readings updated successfully');
     }

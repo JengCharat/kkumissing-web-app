@@ -51,4 +51,22 @@ class DashboardController extends Controller
         //test
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
     }
+    function upload_slip(Request $request){
+        $bills = Bill::where('roomID',7)->first();
+
+        $request->validate([
+            'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',
+        ]);
+
+        $file = $request->file('slip_image');
+
+        $filename = 'slip-image-date'.'-'."xxx" .'.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
+        $path = $file->storeAs('upload', $filename, 'public');
+        // $file->store('upload', 'public');
+        $bills->status = "paid";
+        $bills->slip_file = $path;
+        $bills->save();
+        return redirect('dashboard');
+
+    }
 }

@@ -69,13 +69,12 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Update Unit Prices</h3>
 
-                    <h1>current name</h1>
-                    {{-- {{$bills->tenantName}} --}}
                     <table class="w-full border-collapse border border-gray-300 shadow-lg rounded-lg">
                         <thead>
                             <tr>
                                 <th class="border border-gray-300 px-4 py-2">Bill ID</th>
-                                <th class="border border-gray-300 px-4 py-2">Room ID</th>
+                                <th class="border border-gray-300 px-4 py-2">current name</th>
+                                <th class="border border-gray-300 px-4 py-2">Room Number</th>
                                 <th class="border border-gray-300 px-4 py-2">Daily Rate</th>
                                 <th class="border border-gray-300 px-4 py-2">Total Price</th>
                                 <th class="border border-gray-300 px-4 py-2">Overdue Fee Rate</th>
@@ -87,7 +86,8 @@
                             @foreach ($bills as $bill)
                                 <tr class=" hover:bg-gray-100 transition duration-200">
                                     <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->billID}}</td>
-                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->roomID}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->tenantName}}</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->roomNumber}}</td>
                                     <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->daily_rate}}</td>
                                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold text-green-600">{{$bill->total_price}}</td>
                                     <td class="border border-gray-300 px-4 py-2 text-center">{{$bill->overdue_fee_rate}}</td>
@@ -241,6 +241,18 @@
                         document.getElementById('latest_meter_values').textContent = 'Latest values: No data available';
                     }
                 }
+
+
+
+
+
+
+
+
+
+
+
+
             </script>
         </div>
     </div>
