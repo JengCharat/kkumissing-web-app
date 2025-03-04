@@ -35,4 +35,9 @@ class Tenant extends Model
     public function users(){
         return $this->belongsTo(User::class,'user_id_tenant','id');
     }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class, 'tenantID', 'tenantID');
+    }
 }

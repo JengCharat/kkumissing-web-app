@@ -14,6 +14,7 @@ class Room extends Model
         'roomNumber',
         'status',
         'daily_rate',
+        'month_rate',
         'water_price',
         'electricity_price',
         'overdue_fee_rate',
@@ -39,6 +40,11 @@ class Room extends Model
     public function expenses()
     {
         return $this->hasOne(Expense::class, 'room_id', 'roomID');
+    }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class, 'roomID', 'roomID');
     }
 
 }
