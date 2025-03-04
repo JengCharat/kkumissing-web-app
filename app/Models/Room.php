@@ -26,6 +26,11 @@ class Room extends Model
         return $this->hasOne(Contract::class, 'room_id', 'roomID');
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'room_id', 'roomID');
+    }
+
     public function meterReadings()
     {
         return $this->hasOne(MeterReading::class, 'room_id', 'roomID');

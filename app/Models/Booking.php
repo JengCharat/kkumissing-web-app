@@ -29,6 +29,11 @@ class Booking extends Model
         return $this->belongsTo(Tenant::class, 'tenant_id', 'tenantID');
     }
 
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id', 'roomID');
+    }
+
     // If Booking is related to Expense (based on ERD and 'record' relationship)
     // public function expenses()
     // {

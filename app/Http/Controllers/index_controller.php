@@ -12,10 +12,33 @@ use App\Models\Booking;
 class index_controller extends Controller
 {
     //
-    public function index(){
+    public function index(Request $request){
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
-        return view('index',compact('Lrooms','Rrooms'));
+
+        $check_in = $request->check_in;
+        $check_out = $request->check_out;
+
+        // Get all bookings if date filter is applied
+        $bookings = null;
+        if ($check_in && $check_out) {
+            $bookings = Booking::whereDate('check_in', '<=', $check_out)
+                ->whereDate('check_out', '>=', $check_in)
+                ->get()
+                ->groupBy('room_id');
+        }
+
+        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out'));
+    }
+
+    public function getRoomBookings($roomId) {
+        $room = Room::findOrFail($roomId);
+        $bookings = $room->bookings()->orderBy('check_in')->get();
+
+        return response()->json([
+            'room' => $room,
+            'bookings' => $bookings
+        ]);
     }
     // public function hire(Request $request){
     //     Room::create([
@@ -30,11 +53,6 @@ class index_controller extends Controller
         $room->update([
             'status' => "Not Available",
         ]);
-
-
-
-
-
 
         $tenant = new Tenant();
         $tenant->tenantName = $request->tenantName;
@@ -100,12 +118,13 @@ class index_controller extends Controller
 
 
         $booking = new Booking();
-        $booking->tenant_id =$tenant->tenantID;
+        $booking->tenant_id = $tenant->tenantID;
+        $booking->room_id = $room->roomID;
         $booking->booking_type = $request->tenant_type;
         $booking->check_in = $request->checkin;
         $booking->check_out = $request->checkout;
         $booking->due_date = $request->due_date;
-        $booking->deposit =  $request->deposit;
+        $booking->deposit = $request->deposit;
         $booking->save();
 
 
