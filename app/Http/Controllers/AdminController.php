@@ -385,10 +385,16 @@ class AdminController extends Controller
             $tenant = Tenant::find($booking->tenant_id);
         }
 
+        // Get meter readings for this room
+        $meterReading = MeterReading::with('meterdetails')
+            ->where('room_id', $roomId)
+            ->first();
+
         return response()->json([
             'room' => $room,
             'booking' => $booking,
-            'tenant' => $tenant
+            'tenant' => $tenant,
+            'meter_readings' => $meterReading
         ]);
     }
 
@@ -473,6 +479,10 @@ class AdminController extends Controller
             'tenantID' => 'required|exists:tenants,tenantID',
             'billing_month' => 'required|integer|min:1|max:12',
             'billing_year' => 'required|integer|min:2000|max:2100',
+            'water_meter_start' => 'required|numeric|min:0',
+            'water_meter_end' => 'required|numeric|min:0',
+            'electricity_meter_start' => 'required|numeric|min:0',
+            'electricity_meter_end' => 'required|numeric|min:0',
             'water_units' => 'required|numeric|min:0',
             'electricity_units' => 'required|numeric|min:0',
             'water_rate' => 'required|numeric|min:0',
@@ -511,6 +521,40 @@ class AdminController extends Controller
         $bill->total_price = $request->total_price;
         $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
         $bill->save();
+
+        // Update meter readings
+        $meterReading = MeterReading::firstOrCreate(
+            ['room_id' => $request->roomID],
+            [
+                'reading_date' => now(),
+                'start_date' => now(),
+                'end_date' => now(),
+                'tenant_id' => $request->tenantID
+            ]
+        );
+
+        // Get or create meter details
+        if ($meterReading->meter_details_id) {
+            $meterDetails = MeterDetails::find($meterReading->meter_details_id);
+            if (!$meterDetails) {
+                $meterDetails = new MeterDetails();
+            }
+        } else {
+            $meterDetails = new MeterDetails();
+        }
+
+        // Save meter details
+        $meterDetails->fill([
+            'water_meter_start' => $request->water_meter_start,
+            'water_meter_end' => $request->water_meter_end,
+            'electricity_meter_start' => $request->electricity_meter_start,
+            'electricity_meter_end' => $request->electricity_meter_end,
+        ]);
+        $meterDetails->save();
+
+        // Update meter reading with meter details ID
+        $meterReading->meter_details_id = $meterDetails->meter_detailID;
+        $meterReading->save();
 
         return redirect()->route('admin.monthly-rooms')->with('success', 'Bill saved successfully');
     }

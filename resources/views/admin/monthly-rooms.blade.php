@@ -114,14 +114,18 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                 <div>
-                                    <x-label for="water_rate" value="ค่าน้ำต่อหน่วย" />
-                                    <x-input id="water_rate" name="water_rate" type="number" step="0.01" class="block mt-1 w-full" />
+                                    <x-label for="water_meter_start" value="มิเตอร์น้ำเริ่มต้น" />
+                                    <x-input id="water_meter_start" name="water_meter_start" type="number" step="0.01" class="block mt-1 w-full" onchange="calculateWaterUnits()" />
                                 </div>
                                 <div>
-                                    <x-label for="water_units" value="หน่วยน้ำที่ใช้" />
-                                    <x-input id="water_units" name="water_units" type="number" class="block mt-1 w-full" placeholder="จำนวนหน่วย" onchange="calculateTotal()" />
+                                    <x-label for="water_meter_end" value="มิเตอร์น้ำสิ้นสุด" />
+                                    <x-input id="water_meter_end" name="water_meter_end" type="number" step="0.01" class="block mt-1 w-full" onchange="calculateWaterUnits()" />
+                                </div>
+                                <div>
+                                    <x-label for="water_rate" value="ค่าน้ำต่อหน่วย" />
+                                    <x-input id="water_rate" name="water_rate" type="number" step="0.01" class="block mt-1 w-full" readonly />
                                 </div>
                                 <div>
                                     <x-label for="water_total" value="รวมค่าน้ำ" />
@@ -129,18 +133,36 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <x-label for="electricity_rate" value="ค่าไฟต่อหน่วย" />
-                                    <x-input id="electricity_rate" name="electricity_rate" type="number" step="0.01" class="block mt-1 w-full" />
+                                    <x-label for="water_units" value="หน่วยน้ำที่ใช้" />
+                                    <x-input id="water_units" name="water_units" type="number" class="block mt-1 w-full" placeholder="จำนวนหน่วย" readonly />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <x-label for="electricity_meter_start" value="มิเตอร์ไฟเริ่มต้น" />
+                                    <x-input id="electricity_meter_start" name="electricity_meter_start" type="number" step="0.01" class="block mt-1 w-full" onchange="calculateElectricityUnits()" />
                                 </div>
                                 <div>
-                                    <x-label for="electricity_units" value="หน่วยไฟที่ใช้" />
-                                    <x-input id="electricity_units" name="electricity_units" type="number" class="block mt-1 w-full" placeholder="จำนวนหน่วย" onchange="calculateTotal()" />
+                                    <x-label for="electricity_meter_end" value="มิเตอร์ไฟสิ้นสุด" />
+                                    <x-input id="electricity_meter_end" name="electricity_meter_end" type="number" step="0.01" class="block mt-1 w-full" onchange="calculateElectricityUnits()" />
+                                </div>
+                                <div>
+                                    <x-label for="electricity_rate" value="ค่าไฟต่อหน่วย" />
+                                    <x-input id="electricity_rate" name="electricity_rate" type="number" step="0.01" class="block mt-1 w-full" readonly />
                                 </div>
                                 <div>
                                     <x-label for="electricity_total" value="รวมค่าไฟ" />
                                     <x-input id="electricity_total" name="electricity_price" type="number" step="0.01" class="block mt-1 w-full" readonly />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <x-label for="electricity_units" value="หน่วยไฟที่ใช้" />
+                                    <x-input id="electricity_units" name="electricity_units" type="number" class="block mt-1 w-full" placeholder="จำนวนหน่วย" readonly />
                                 </div>
                             </div>
 
@@ -212,6 +234,22 @@
                     } else {
                         document.getElementById('room_id').value = roomID;
                     }
+
+                    // Fetch utility rates
+                    fetch('/admin/utilities')
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const waterRate = doc.getElementById('unit_price_water').value;
+                            const electricityRate = doc.getElementById('unit_price_electricity').value;
+
+                            document.getElementById('water_rate').value = waterRate;
+                            document.getElementById('electricity_rate').value = electricityRate;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching utility rates:', error);
+                        });
 
                     // Fetch tenant details for this room using AJAX
                     fetch(`/admin/get-room-tenant/${roomID}`)
@@ -304,21 +342,46 @@
                         });
                 }
 
-                function calculateTotal() {
-                    const waterUnits = parseFloat(document.getElementById('water_units').value) || 0;
-                    const electricityUnits = parseFloat(document.getElementById('electricity_units').value) || 0;
+                function calculateWaterUnits() {
+                    const waterMeterStart = parseFloat(document.getElementById('water_meter_start').value) || 0;
+                    const waterMeterEnd = parseFloat(document.getElementById('water_meter_end').value) || 0;
                     const waterRate = parseFloat(document.getElementById('water_rate').value) || 0;
+
+                    if (waterMeterEnd >= waterMeterStart) {
+                        const waterUnits = waterMeterEnd - waterMeterStart;
+                        const waterTotal = waterUnits * waterRate;
+
+                        document.getElementById('water_units').value = waterUnits.toFixed(2);
+                        document.getElementById('water_total').value = waterTotal.toFixed(2);
+
+                        calculateTotal();
+                    }
+                }
+
+                function calculateElectricityUnits() {
+                    const electricityMeterStart = parseFloat(document.getElementById('electricity_meter_start').value) || 0;
+                    const electricityMeterEnd = parseFloat(document.getElementById('electricity_meter_end').value) || 0;
                     const electricityRate = parseFloat(document.getElementById('electricity_rate').value) || 0;
+
+                    if (electricityMeterEnd >= electricityMeterStart) {
+                        const electricityUnits = electricityMeterEnd - electricityMeterStart;
+                        const electricityTotal = electricityUnits * electricityRate;
+
+                        document.getElementById('electricity_units').value = electricityUnits.toFixed(2);
+                        document.getElementById('electricity_total').value = electricityTotal.toFixed(2);
+
+                        calculateTotal();
+                    }
+                }
+
+                function calculateTotal() {
+                    const waterTotal = parseFloat(document.getElementById('water_total').value) || 0;
+                    const electricityTotal = parseFloat(document.getElementById('electricity_total').value) || 0;
                     const roomRate = parseFloat(document.getElementById('room_rate').value) || 0;
                     const damageFee = parseFloat(document.getElementById('damage_fee').value) || 0;
                     const overdueFee = parseFloat(document.getElementById('overdue_fee').value) || 0;
 
-                    const waterTotal = waterUnits * waterRate;
-                    const electricityTotal = electricityUnits * electricityRate;
                     const total = roomRate + waterTotal + electricityTotal + damageFee + overdueFee;
-
-                    document.getElementById('water_total').value = waterTotal.toFixed(2);
-                    document.getElementById('electricity_total').value = electricityTotal.toFixed(2);
                     document.getElementById('total_price').value = total.toFixed(2);
                 }
 
@@ -331,12 +394,52 @@
                                 const billDate = new Date(data.bill.BillDate);
                                 document.getElementById('billing_month').value = billDate.getMonth() + 1;
                                 document.getElementById('billing_year').value = billDate.getFullYear();
-                                document.getElementById('water_units').value = data.water_units || '';
-                                document.getElementById('electricity_units').value = data.electricity_units || '';
+
+                                // Get meter readings for this bill if available
+                                const roomId = data.bill.roomID;
+                                fetch(`/admin/get-room-tenant/${roomId}`)
+                                    .then(response => response.json())
+                                    .then(roomData => {
+                                        if (roomData.meter_readings && roomData.meter_readings.meterdetails) {
+                                            const meterDetails = roomData.meter_readings.meterdetails;
+                                            document.getElementById('water_meter_start').value = meterDetails.water_meter_start || '0';
+                                            document.getElementById('water_meter_end').value = meterDetails.water_meter_end || '0';
+                                            document.getElementById('electricity_meter_start').value = meterDetails.electricity_meter_start || '0';
+                                            document.getElementById('electricity_meter_end').value = meterDetails.electricity_meter_end || '0';
+
+                                            // Calculate units
+                                            calculateWaterUnits();
+                                            calculateElectricityUnits();
+                                        } else {
+                                            // If no meter details, use the units from the bill
+                                            document.getElementById('water_units').value = data.water_units || '';
+                                            document.getElementById('electricity_units').value = data.electricity_units || '';
+
+                                            // Calculate totals
+                                            const waterRate = parseFloat(document.getElementById('water_rate').value) || 0;
+                                            const electricityRate = parseFloat(document.getElementById('electricity_rate').value) || 0;
+
+                                            document.getElementById('water_total').value = data.bill.water_price || '0';
+                                            document.getElementById('electricity_total').value = data.bill.electricity_price || '0';
+
+                                            // Estimate meter readings if needed
+                                            if (data.water_units && waterRate > 0) {
+                                                document.getElementById('water_meter_start').value = '0';
+                                                document.getElementById('water_meter_end').value = data.water_units;
+                                            }
+
+                                            if (data.electricity_units && electricityRate > 0) {
+                                                document.getElementById('electricity_meter_start').value = '0';
+                                                document.getElementById('electricity_meter_end').value = data.electricity_units;
+                                            }
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error fetching room details:', error);
+                                    });
+
                                 document.getElementById('damage_fee').value = data.bill.damage_fee || '0';
                                 document.getElementById('overdue_fee').value = data.bill.overdue_fee || '0';
-                                document.getElementById('water_total').value = data.bill.water_price || '0';
-                                document.getElementById('electricity_total').value = data.bill.electricity_price || '0';
                                 document.getElementById('total_price').value = data.bill.total_price || '0';
 
                                 // Add bill ID to form for update
@@ -401,6 +504,22 @@
                     const now = new Date();
                     document.getElementById('billing_month').value = now.getMonth() + 1;
                     document.getElementById('billing_year').value = now.getFullYear();
+
+                    // Fetch utility rates again
+                    fetch('/admin/utilities')
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const waterRate = doc.getElementById('unit_price_water').value;
+                            const electricityRate = doc.getElementById('unit_price_electricity').value;
+
+                            document.getElementById('water_rate').value = waterRate;
+                            document.getElementById('electricity_rate').value = electricityRate;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching utility rates:', error);
+                        });
                 }
             </script>
         </div>
