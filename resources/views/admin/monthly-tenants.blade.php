@@ -158,7 +158,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <x-label for="deposit" value="เงินมัดจำ (บาท)" />
-                        <x-input id="deposit" name="deposit" type="number" step="0.01" class="block mt-1 w-full" required />
+                        <x-input id="deposit" name="deposit" type="number" class="block mt-1 w-full" required />
                     </div>
                     <div>
                         <x-label for="contract_file" value="อัพโหลดสัญญา" />

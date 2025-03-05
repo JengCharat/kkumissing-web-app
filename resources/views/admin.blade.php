@@ -77,19 +77,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <x-label for="water_meter_start" value="Water Meter Start" />
-                                <x-input id="water_meter_start" type="number" step="0.01" name="water_meter_start" class="block mt-1 w-full" required />
+                                <x-input id="water_meter_start" type="number" name="water_meter_start" class="block mt-1 w-full" required />
                             </div>
                             <div>
                                 <x-label for="water_meter_end" value="Water Meter End" />
-                                <x-input id="water_meter_end" type="number" step="0.01" name="water_meter_end" class="block mt-1 w-full" required />
+                                <x-input id="water_meter_end" type="number" name="water_meter_end" class="block mt-1 w-full" required />
                             </div>
                             <div>
                                 <x-label for="electricity_meter_start" value="Electricity Meter Start" />
-                                <x-input id="electricity_meter_start" type="number" step="0.01" name="electricity_meter_start" class="block mt-1 w-full" required />
+                                <x-input id="electricity_meter_start" type="number" name="electricity_meter_start" class="block mt-1 w-full" required />
                             </div>
                             <div>
                                 <x-label for="electricity_meter_end" value="Electricity Meter End" />
-                                <x-input id="electricity_meter_end" type="number" step="0.01" name="electricity_meter_end" class="block mt-1 w-full" required />
+                                <x-input id="electricity_meter_end" type="number" name="electricity_meter_end" class="block mt-1 w-full" required />
                             </div>
                         </div>
                         <div class="mt-4">

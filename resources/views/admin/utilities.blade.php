@@ -23,11 +23,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <x-label for="unit_price_water" value="ค่าน้ำ (บาท/หน่วย)" />
-                                <x-input id="unit_price_water" type="number" step="0.01" name="unit_price_water" value="{{ $unit_price_water ?? 18 }}" class="block mt-1 w-full" required />
+                                <x-input id="unit_price_water" type="number" name="unit_price_water" value="{{ $unit_price_water ?? 18 }}" class="block mt-1 w-full" required />
                             </div>
                             <div>
                                 <x-label for="unit_price_electricity" value="ค่าไฟ (บาท/หน่วย)" />
-                                <x-input id="unit_price_electricity" type="number" step="0.01" name="unit_price_electricity" value="{{ $unit_price_electricity ?? 8 }}" class="block mt-1 w-full" required />
+                                <x-input id="unit_price_electricity" type="number" name="unit_price_electricity" value="{{ $unit_price_electricity ?? 8 }}" class="block mt-1 w-full" required />
                             </div>
                         </div>
                         <div class="mt-4">
