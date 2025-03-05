@@ -41,11 +41,11 @@ class BahtText
 
             if ($digit != 0) {
                 if ($position % 6 == 1 && $digit == 1) {
-                    $bahtText .= ''; // For position 'สิบ', don't say 'หนึ่ง'
+                    $bahtText .= ''; // ในหลัก 'สิบ', ไม่ใส่ 'หนึ่ง' เพราะไม่มีใครพูด 'หนึ่งสิบ'
                 } elseif ($position % 6 == 1 && $digit == 2) {
-                    $bahtText .= 'ยี่'; // For position 'สิบ', say 'ยี่' instead of 'สอง'
+                    $bahtText .= 'ยี่'; // ในหลัก 'สิบ', ใส่ 'ยี่' แทน 'สอง' เพราะไม่มีใครพูด 'สองสิบ'
                 } elseif ($position % 6 == 0 && $digit == 1 && $length > 1) {
-                    $bahtText .= 'เอ็ด'; // For position 'หน่วย', say 'เอ็ด' instead of 'หนึ่ง' if not the only digit
+                    $bahtText .= 'เอ็ด'; // ในหลัก  'หน่วย', ใส่ 'เอ็ด' แทน 'หนึ่ง' [101 = ร้อยเอ็ด]
                 } else {
                     $bahtText .= self::$numbers[$digit];
                 }
@@ -72,11 +72,11 @@ class BahtText
 
             if ($digit != 0) {
                 if ($position % 6 == 1 && $digit == 1) {
-                    $bahtText .= ''; // For position 'สิบ', don't say 'หนึ่ง'
+                    $bahtText .= ''; // ในหลัก 'สิบ', ไม่ใส่ 'หนึ่ง' เพราะไม่มีใครพูด 'หนึ่งสิบ'
                 } elseif ($position % 6 == 1 && $digit == 2) {
-                    $bahtText .= 'ยี่'; // For position 'สิบ', say 'ยี่' instead of 'สอง'
+                    $bahtText .= 'ยี่'; // ในหลัก 'สิบ', ใส่ 'ยี่' แทน 'สอง' เพราะไม่มีใครพูด 'สองสิบ'
                 } elseif ($position % 6 == 0 && $digit == 1 && $i > 0) {
-                    $bahtText .= 'เอ็ด'; // For position 'หน่วย', say 'เอ็ด' instead of 'หนึ่ง' if not the only digit
+                    $bahtText .= 'เอ็ด'; // ในหลัก  'หน่วย', ใส่ 'เอ็ด' แทน 'หนึ่ง' [101 = ร้อยเอ็ด]
                 } else {
                     $bahtText .= self::$numbers[$digit];
                 }

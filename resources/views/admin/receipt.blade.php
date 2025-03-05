@@ -108,7 +108,7 @@
     <div class="receipt">
         <div class="receipt-header">
             <h1>ใบเสร็จรับเงิน / RECEIPT</h1>
-            <p>อพาร์ทเม้นท์ / Apartment</p>
+            <p>วราภรณ์ แมนชั่น</p>
             <p>123 ถนนสุขุมวิท กรุงเทพฯ 10110</p>
             <p>โทร: 02-123-4567</p>
         </div>
@@ -138,7 +138,7 @@
             <tbody>
                 <tr>
                     <td>ค่าห้องพัก / Room Rate</td>
-                    <td>{{ number_format($bill->total_price - ($bill->water_price + $bill->electricity_price + $bill->damage_fee + $bill->overdue_fee), 2) }}</td>
+                    <td>{{ number_format($bill->room_rate ?? ($bill->total_price - ($bill->water_price + $bill->electricity_price + $bill->damage_fee + $bill->overdue_fee)), 2) }}</td>
                 </tr>
                 <tr>
                     <td>ค่าน้ำ / Water</td>

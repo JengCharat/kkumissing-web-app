@@ -503,6 +503,7 @@ class AdminController extends Controller
         $bill->roomID = $request->roomID;
         $bill->tenantID = $request->tenantID;
         $bill->BillDate = $billDate;
+        $bill->room_rate = $request->room_rate;
         $bill->damage_fee = $request->damage_fee;
         $bill->overdue_fee = $request->overdue_fee;
         $bill->water_price = $request->water_price;

@@ -188,7 +188,7 @@
                                 </tr>
                             </thead>
                             <tbody id="bills_table_body">
-                                <!-- Bills will be loaded here dynamically -->
+                                <!-- Bills will be loaded here -->
                             </tbody>
                         </table>
                     </div>
@@ -245,8 +245,11 @@
 
                             if (data.room) {
                                 document.getElementById('room_price').textContent = data.room.month_rate.toLocaleString();
+                                // Set the room rate in the form field
+                                document.getElementById('room_rate').value = data.room.month_rate;
                             } else {
                                 document.getElementById('room_price').textContent = '-';
+                                document.getElementById('room_rate').value = 0;
                             }
 
                             // Load existing bills for this room

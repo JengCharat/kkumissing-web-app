@@ -20,6 +20,7 @@ class Bill extends Model
         'electricity_price',
         'total_price',
         'status',
+        'room_rate',
     ];
 
     protected $primaryKey = 'BillNo';
