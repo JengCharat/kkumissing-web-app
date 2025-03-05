@@ -9,6 +9,7 @@ use App\Models\Room;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use App\Models\Expense;
+use App\Models\Bill;
 class DashboardController extends Controller
 {
     //
@@ -41,6 +42,38 @@ class DashboardController extends Controller
             $rooms->save();
         }
         //test
-        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
+        //
+        $bills = Bill::where('roomID', $rooms->roomID)
+        ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time
+        ->first();  // Get the first (most recent) record
+        $status = $bills->status;
+        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','status'));
     }
+
+
+
+
+     function upload_slip(Request $request){
+            $bills = Bill::where('roomID', $request->roomID)
+            ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time
+            ->first();  // Get the first (most recent) record
+
+
+            $request->validate([
+                'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',
+            ]);
+
+            $file = $request->file('slip_image');
+
+            $filename = 'slip-image-date'.'-'."xxx" .'.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
+            $path = $file->storeAs('upload', $filename, 'public');
+            // $file->store('upload', 'public');
+            $bills->status = "ชำระแล้ว";
+            $bills->slip_file = $path;
+            $bills->save();
+
+            $status = $bills->status;
+            return redirect('dashboard')->with('status', $status);
+
+        }
 }

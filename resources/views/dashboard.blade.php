@@ -31,6 +31,14 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-semibold text-blue-800">Total Amount Due</h3>
                         <p class="text-2xl font-bold text-blue-800">฿ {{ number_format($rooms->water_price + $rooms->electricity_price, 2) }}</p>
+                        <form method = "post" action="/dashboard/upload_slip" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
+                            <input type="file" name = "slip_image">
+                            <button>PAY</button>
+                            <br>
+                            {{$status}}
+                        </form>
                     </div>
                     <p class="text-sm text-blue-600">Please make your payment before the due date to avoid late fees.</p>
                 </div>
