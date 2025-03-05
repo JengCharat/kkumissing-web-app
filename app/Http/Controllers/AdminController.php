@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -35,10 +36,17 @@ class AdminController extends Controller
      */
     public function monthlyRooms()
     {
+
         // Get rooms with L and R prefixes
+
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
-        return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms'));
+        // $Rooms = DB::table('rooms')
+        // ->join('contracts', 'contracts.room_id', '=', 'rooms.roomID')
+        // ->leftJoin('tenants','contracts.tenant_id','=','tenants.tenantID')
+        // ->select('tenants.tenantName')
+        // ->first();
+        return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms','Rooms'));
     }
 
     /**

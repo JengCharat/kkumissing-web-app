@@ -71,6 +71,7 @@
                             <h4 class="font-medium mb-2">ข้อมูลผู้เช่า</h4>
                             <p>ชื่อ: <span id="tenant_name">-</span></p>
                             <p>เบอร์โทร: <span id="tenant_phone">-</span></p>
+                            {{-- {{$Rooms->tenantName}} --}}
                         </div>
                         <div>
                             <h4 class="font-medium mb-2">ข้อมูลการเช่า</h4>
