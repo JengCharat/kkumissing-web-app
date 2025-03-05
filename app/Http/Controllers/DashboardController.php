@@ -35,7 +35,6 @@ class DashboardController extends Controller
         }
 
         $expense = Expense::where('expenseID', 1)->first();
-
         if ($expense) {
             $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
             $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
