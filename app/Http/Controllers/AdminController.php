@@ -59,7 +59,12 @@ class AdminController extends Controller
      */
     public function pendingPayments()
     {
-        return view('admin.pending-payments');
+        $pendingBills = Bill::where('status', 'รอชำระเงิน')
+            ->with(['room', 'tenant'])
+            ->orderBy('BillDate', 'desc')
+            ->get();
+
+        return view('admin.pending-payments', compact('pendingBills'));
     }
 
     /**
@@ -67,7 +72,12 @@ class AdminController extends Controller
      */
     public function completedPayments()
     {
-        return view('admin.completed-payments');
+        $completedBills = Bill::where('status', 'ชำระแล้ว')
+            ->with(['room', 'tenant'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return view('admin.completed-payments', compact('completedBills'));
     }
 
     /**
@@ -498,6 +508,7 @@ class AdminController extends Controller
         $bill->water_price = $request->water_price;
         $bill->electricity_price = $request->electricity_price;
         $bill->total_price = $request->total_price;
+        $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
         $bill->save();
 
         return redirect()->route('admin.monthly-rooms')->with('success', 'Bill saved successfully');
@@ -515,6 +526,36 @@ class AdminController extends Controller
 
         $bill->delete();
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Mark a bill as paid
+     */
+    public function markBillAsPaid($billId)
+    {
+        $bill = Bill::find($billId);
+        if (!$bill) {
+            return response()->json(['success' => false, 'message' => 'Bill not found'], 404);
+        }
+
+        $bill->status = 'ชำระแล้ว';
+        $bill->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Print receipt for a bill
+     */
+    public function printReceipt($billId)
+    {
+        $bill = Bill::with(['room', 'tenant'])->find($billId);
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Bill not found');
+        }
+
+        // Return a view with the receipt
+        return view('admin.receipt', compact('bill'));
     }
 
     /**

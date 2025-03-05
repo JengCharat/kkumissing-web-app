@@ -205,6 +205,20 @@ Route::middleware([
             return app()->make(AdminController::class)->deleteBill($billId);
         })->name('admin.delete-bill');
 
+        Route::post('/mark-bill-as-paid/{billId}', function ($billId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->markBillAsPaid($billId);
+        })->name('admin.mark-bill-as-paid');
+
+        Route::get('/print-receipt/{billId}', function ($billId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->printReceipt($billId);
+        })->name('admin.print-receipt');
+
         // Monthly tenant management routes
         Route::get('/get-available-rooms', function () {
             if (auth()->user()->usertype !== 'admin') {

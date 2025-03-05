@@ -57,52 +57,27 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                <!-- Sample data rows -->
+                                @forelse($pendingBills ?? [] as $bill)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">INV-2025-001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">L001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">สมชาย ใจดี</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">รายเดือน</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">01/03/2025</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">5,500 บาท</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $bill->BillNo }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $bill->room->roomNumber }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $bill->tenant->tenantName }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $bill->tenant->tenant_type == 'monthly' ? 'รายเดือน' : 'รายวัน' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ date('d/m/Y', strtotime($bill->BillDate)) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ number_format($bill->total_price, 2) }} บาท</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">รอชำระเงิน</span>
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ $bill->status }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">ดูรายละเอียด</button>
-                                        <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">บันทึกชำระเงิน</button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2" onclick="viewBillDetails({{ $bill->BillNo }})">ดูรายละเอียด</button>
+                                        <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" onclick="markAsPaid({{ $bill->BillNo }})">บันทึกชำระเงิน</button>
                                     </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">INV-2025-002</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">R003</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">สมหญิง รักดี</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">รายเดือน</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">01/03/2025</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">4,800 บาท</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">รอชำระเงิน</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">ดูรายละเอียด</button>
-                                        <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">บันทึกชำระเงิน</button>
-                                    </td>
+                                    <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900 dark:text-gray-100">ไม่พบรายการรอชำระเงิน</td>
                                 </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">INV-2025-003</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">L005</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">วิชัย มานะ</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">รายวัน</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">02/03/2025</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">1,200 บาท</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">รอชำระเงิน</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">ดูรายละเอียด</button>
-                                        <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">บันทึกชำระเงิน</button>
-                                    </td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -127,4 +102,40 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript for handling bill actions -->
+    <script>
+        function viewBillDetails(billId) {
+            // Redirect to bill details or show in modal
+            window.location.href = `/admin/get-bill/${billId}`;
+        }
+
+        function markAsPaid(billId) {
+            if (confirm('คุณต้องการบันทึกการชำระเงินสำหรับบิลนี้ใช่หรือไม่?')) {
+                // Send AJAX request to mark bill as paid
+                fetch(`/admin/mark-bill-as-paid/${billId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('บันทึกการชำระเงินเรียบร้อยแล้ว');
+                        // Reload the page to refresh the bill list
+                        window.location.reload();
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถบันทึกการชำระเงินได้'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+                });
+            }
+        }
+    </script>
 </x-admin-layout>

@@ -19,6 +19,7 @@ class Bill extends Model
         'water_price',
         'electricity_price',
         'total_price',
+        'status',
     ];
 
     protected $primaryKey = 'BillNo';
