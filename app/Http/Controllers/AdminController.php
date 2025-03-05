@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bill;
 use App\Models\Room;
 use App\Models\User;
+use App\Models\Tenant;
+use App\Models\Booking;
 use App\Models\Expense;
+use App\Models\Contract;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use Illuminate\Http\Request;
@@ -71,7 +75,87 @@ class AdminController extends Controller
      */
     public function monthlyTenants()
     {
-        return view('admin.monthly-tenants');
+        // Get monthly tenants with their rooms and bookings
+        $tenants = Tenant::where('tenant_type', 'monthly')
+            ->with(['bookings.room', 'contracts'])
+            ->get();
+
+        return view('admin.monthly-tenants', compact('tenants'));
+    }
+
+    /**
+     * Update monthly tenant
+     */
+    public function updateMonthlyTenant(Request $request)
+    {
+        $request->validate([
+            'tenantID' => 'required|exists:tenants,tenantID',
+            'tenantName' => 'required|string',
+            'tenantTel' => 'required|string',
+        ]);
+
+        // Update tenant
+        $tenant = Tenant::find($request->tenantID);
+        $tenant->tenantName = $request->tenantName;
+        $tenant->telNumber = $request->tenantTel;
+        $tenant->save();
+
+        return redirect()->route('admin.monthly-tenants')->with('success', 'อัพเดทข้อมูลลูกค้าเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Delete monthly tenant
+     */
+    public function deleteMonthlyTenant($tenantID)
+    {
+        $tenant = Tenant::find($tenantID);
+        if (!$tenant) {
+            return redirect()->route('admin.monthly-tenants')->with('error', 'ไม่พบข้อมูลลูกค้า');
+        }
+
+        // Get booking for this tenant
+        $booking = Booking::where('tenant_id', $tenantID)->first();
+        if ($booking) {
+            // Get room for this booking
+            $room = Room::find($booking->room_id);
+            if ($room) {
+                // Update room status to Available
+                $room->status = 'Available';
+                $room->save();
+
+                // Find and clear meter readings for this room
+                $meterReading = MeterReading::where('room_id', $room->roomID)->first();
+                if ($meterReading) {
+                    // Clear tenant association
+                    $meterReading->tenant_id = null;
+                    $meterReading->save();
+
+                    // Reset meter details if they exist
+                    if ($meterReading->meter_details_id) {
+                        $meterDetails = MeterDetails::find($meterReading->meter_details_id);
+                        if ($meterDetails) {
+                            // Reset all meter readings to 0
+                            $meterDetails->water_meter_start = 0;
+                            $meterDetails->water_meter_end = 0;
+                            $meterDetails->electricity_meter_start = 0;
+                            $meterDetails->electricity_meter_end = 0;
+                            $meterDetails->save();
+                        }
+                    }
+                }
+            }
+
+            // Delete booking
+            $booking->delete();
+        }
+
+        // Delete contracts
+        Contract::where('tenant_id', $tenantID)->delete();
+
+        // Delete tenant
+        $tenant->delete();
+
+        return redirect()->route('admin.monthly-tenants')->with('success', 'ลบข้อมูลลูกค้าเรียบร้อยแล้ว');
     }
 
     /**
@@ -267,5 +351,264 @@ class AdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Room status updated successfully');
+    }
+
+    /**
+     * Get tenant details for a room
+     */
+    public function getRoomTenant($roomId)
+    {
+        $room = Room::find($roomId);
+        if (!$room) {
+            return response()->json(['error' => 'Room not found'], 404);
+        }
+
+        // Get booking for this room
+        $booking = Booking::where('room_id', $roomId)
+            ->where('booking_type', 'monthly')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Get tenant from booking
+        $tenant = null;
+        if ($booking && $booking->tenant_id) {
+            $tenant = Tenant::find($booking->tenant_id);
+        }
+
+        return response()->json([
+            'room' => $room,
+            'booking' => $booking,
+            'tenant' => $tenant
+        ]);
+    }
+
+    /**
+     * Get tenant details by tenant ID
+     */
+    public function getTenantDetails($tenantId)
+    {
+        $tenant = Tenant::find($tenantId);
+        if (!$tenant) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        // Get booking for this tenant
+        $booking = Booking::where('tenant_id', $tenantId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Get room from booking
+        $room = null;
+        if ($booking && $booking->room_id) {
+            $room = Room::find($booking->room_id);
+        }
+
+        return response()->json([
+            'tenant' => $tenant,
+            'booking' => $booking,
+            'room' => $room
+        ]);
+    }
+
+    /**
+     * Get bills for a room
+     */
+    public function getRoomBills($roomId)
+    {
+        $bills = Bill::where('roomID', $roomId)
+            ->orderBy('BillDate', 'desc')
+            ->get();
+
+        return response()->json(['bills' => $bills]);
+    }
+
+    /**
+     * Get bill details
+     */
+    public function getBill($billId)
+    {
+        $bill = Bill::find($billId);
+        if (!$bill) {
+            return response()->json(['error' => 'Bill not found'], 404);
+        }
+
+        // Calculate water and electricity units based on prices
+        $room = Room::find($bill->roomID);
+        $water_units = 0;
+        $electricity_units = 0;
+
+        if ($room) {
+            if ($room->water_price > 0 && $bill->water_price > 0) {
+                $water_units = $bill->water_price / $room->water_price;
+            }
+            if ($room->electricity_price > 0 && $bill->electricity_price > 0) {
+                $electricity_units = $bill->electricity_price / $room->electricity_price;
+            }
+        }
+
+        return response()->json([
+            'bill' => $bill,
+            'water_units' => $water_units,
+            'electricity_units' => $electricity_units
+        ]);
+    }
+
+    /**
+     * Create or update a bill
+     */
+    public function createBill(Request $request)
+    {
+        $request->validate([
+            'roomID' => 'required|exists:rooms,roomID',
+            'tenantID' => 'required|exists:tenants,tenantID',
+            'billing_month' => 'required|integer|min:1|max:12',
+            'billing_year' => 'required|integer|min:2000|max:2100',
+            'water_units' => 'required|numeric|min:0',
+            'electricity_units' => 'required|numeric|min:0',
+            'water_rate' => 'required|numeric|min:0',
+            'electricity_rate' => 'required|numeric|min:0',
+            'room_rate' => 'required|numeric|min:0',
+            'damage_fee' => 'nullable|numeric|min:0',
+            'overdue_fee' => 'nullable|numeric|min:0',
+            'water_price' => 'required|numeric|min:0',
+            'electricity_price' => 'required|numeric|min:0',
+            'total_price' => 'required|numeric|min:0',
+        ]);
+
+        // Create bill date from month and year
+        $billDate = date('Y-m-d', strtotime($request->billing_year . '-' . $request->billing_month . '-01'));
+
+        // Check if we're updating an existing bill
+        if ($request->has('billId')) {
+            $bill = Bill::find($request->billId);
+            if (!$bill) {
+                return redirect()->back()->with('error', 'Bill not found');
+            }
+        } else {
+            // Create a new bill
+            $bill = new Bill();
+        }
+
+        // Set bill data
+        $bill->roomID = $request->roomID;
+        $bill->tenantID = $request->tenantID;
+        $bill->BillDate = $billDate;
+        $bill->damage_fee = $request->damage_fee;
+        $bill->overdue_fee = $request->overdue_fee;
+        $bill->water_price = $request->water_price;
+        $bill->electricity_price = $request->electricity_price;
+        $bill->total_price = $request->total_price;
+        $bill->save();
+
+        return redirect()->route('admin.monthly-rooms')->with('success', 'Bill saved successfully');
+    }
+
+    /**
+     * Delete a bill
+     */
+    public function deleteBill($billId)
+    {
+        $bill = Bill::find($billId);
+        if (!$bill) {
+            return response()->json(['success' => false, 'message' => 'Bill not found'], 404);
+        }
+
+        $bill->delete();
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Get available rooms for monthly tenant
+     */
+    public function getAvailableRooms()
+    {
+        $rooms = Room::where('status', 'Available')->get();
+        return response()->json(['rooms' => $rooms]);
+    }
+
+    /**
+     * Create a new monthly tenant
+     */
+    public function createMonthlyTenant(Request $request)
+    {
+        $request->validate([
+            'roomNumber' => 'required|string',
+            'tenantName' => 'required|string',
+            'tenantTel' => 'required|string',
+            'due_date' => 'required|date',
+            'deposit' => 'required|numeric',
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif',
+        ]);
+
+        // Get room by room number
+        $room = Room::where('roomNumber', $request->roomNumber)->firstOrFail();
+
+        // Check if room is available
+        if ($room->status != "Available") {
+            return redirect()->back()->with('error', 'ห้องไม่ว่าง');
+        }
+
+        // Update room status to Not Available
+        $room->update([
+            'status' => "Not Available",
+        ]);
+
+        // Create new tenant
+        $tenant = new Tenant();
+        $tenant->tenantName = $request->tenantName;
+        $tenant->tenant_type = $request->tenant_type;
+        $tenant->telNumber = $request->tenantTel;
+
+        // For monthly tenants, use the room's user
+        $users = User::where('name', $request->roomNumber)->first();
+        if ($users) {
+            $tenant->user_id_tenant = $users->id;
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
+        } else {
+            // If no user found, use admin user
+            $adminUser = User::where('email', 'admin@gmail.com')->first();
+            if ($adminUser) {
+                $tenant->user_id_tenant = $adminUser->id;
+            }
+        }
+
+        $tenant->save();
+
+        // Update meter reading with tenant
+        $meter_reading = MeterReading::where('room_id', $room->roomID)->first();
+        if ($meter_reading) {
+            $meter_reading->tenant_id = $tenant->tenantID;
+            $meter_reading->save();
+        }
+
+        // Create contract
+        $contract = new Contract();
+        $contract->start_date = today(); // Use today as start date
+        $contract->end_date = $request->due_date; // Use due date as end date
+        $contract->room_id = $room->roomID;
+        $contract->tenant_id = $tenant->tenantID;
+        $contract->contract_date = today();
+        $contract->save();
+
+        // Handle contract file upload
+        $file = $request->file('img');
+        $filename = $contract->contractID . '-' . $tenant->tenantID . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('upload', $filename, 'public');
+        $contract->contract_file = $path;
+        $contract->save();
+
+        // Create booking
+        $booking = new Booking();
+        $booking->tenant_id = $tenant->tenantID;
+        $booking->room_id = $room->roomID;
+        $booking->booking_type = $request->tenant_type;
+        $booking->check_in = today(); // Use today as check-in date
+        $booking->check_out = $request->due_date; // Use due date as check-out date
+        $booking->due_date = $request->due_date;
+        $booking->deposit = $request->deposit;
+        $booking->save();
+
+        return redirect()->route('admin.monthly-tenants')->with('success', 'เพิ่มลูกค้ารายเดือนเรียบร้อยแล้ว');
     }
 }

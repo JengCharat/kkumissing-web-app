@@ -161,5 +161,77 @@ Route::middleware([
             }
             return app()->make(AdminController::class)->updateRoomStatus(request());
         })->name('admin.update-room-status');
+
+        // Bill management routes
+        Route::get('/get-room-tenant/{roomId}', function ($roomId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getRoomTenant($roomId);
+        })->name('admin.get-room-tenant');
+
+        Route::get('/get-tenant-details/{tenantId}', function ($tenantId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getTenantDetails($tenantId);
+        })->name('admin.get-tenant-details');
+
+        Route::get('/get-room-bills/{roomId}', function ($roomId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getRoomBills($roomId);
+        })->name('admin.get-room-bills');
+
+        Route::get('/get-bill/{billId}', function ($billId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getBill($billId);
+        })->name('admin.get-bill');
+
+        Route::post('/create-bill', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->createBill(request());
+        })->name('admin.create-bill');
+
+        Route::delete('/delete-bill/{billId}', function ($billId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->deleteBill($billId);
+        })->name('admin.delete-bill');
+
+        // Monthly tenant management routes
+        Route::get('/get-available-rooms', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getAvailableRooms();
+        })->name('admin.get-available-rooms');
+
+        Route::post('/create-monthly-tenant', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->createMonthlyTenant(request());
+        })->name('admin.create-monthly-tenant');
+
+        Route::post('/update-monthly-tenant', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->updateMonthlyTenant(request());
+        })->name('admin.update-monthly-tenant');
+
+        Route::delete('/delete-monthly-tenant/{tenantID}', function ($tenantID) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->deleteMonthlyTenant($tenantID);
+        })->name('admin.delete-monthly-tenant');
     });
 });

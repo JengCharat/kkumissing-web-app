@@ -19,15 +19,35 @@
                 </ul>
             </div>
 
+
             <!-- Room Display -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">รายการห้องพักรายวัน</h3>
                         <div>
-                            <x-button>
+                            <x-button type="button" onclick="showBookingForm()">
                                 + เพิ่มการจอง
                             </x-button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="text-md font-medium text-gray-600">ห้องที่เลือก:</h4>
+                        <h1 id="room_ID_select" class="text-2xl font-bold text-blue-600"></h1>
+                    </div>
+                    <input type="hidden" name="roomNumber" id="room_ID_select2" value="">
+
+                    <!-- Room Details Section -->
+                    <div id="room_details" class="mb-6 p-4 bg-gray-50 rounded-lg hidden">
+                        <h4 class="text-md font-medium mb-2">รายละเอียดห้อง</h4>
+                        <p class="mb-2">ประเภท: ห้องแอร์พร้อมเตียง ตู้เย็น และห้องน้ำ</p>
+
+                        <div id="booking_schedule" class="mt-4">
+                            <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
+                            <div id="booking_list" class="space-y-2">
+                                <!-- Booking entries will be populated here -->
+                            </div>
                         </div>
                     </div>
 
@@ -36,7 +56,7 @@
                         <div class="grid grid-cols-6 gap-2">
                             @foreach ($Lrooms->chunk(6) as $room)
                                 @foreach ($room as $item)
-                                    <button onclick="select_this_room('{{ $item->roomNumber }}')"
+                                    <button onclick="select_this_room('{{ $item->roomID }}')"
                                             class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                         {{ $item->roomNumber }}
                                     </button>
@@ -50,7 +70,7 @@
                         <div class="grid grid-cols-6 gap-2">
                             @foreach ($Rrooms->chunk(6) as $room)
                                 @foreach ($room as $item)
-                                    <button onclick="select_this_room('{{ $item->roomNumber }}')"
+                                    <button onclick="select_this_room('{{ $item->roomID }}')"
                                             class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
                                         {{ $item->roomNumber }}
                                     </button>
@@ -61,50 +81,60 @@
                 </div>
             </div>
 
-            <!-- Selected Room Details (Initially Hidden) -->
-            <div id="room_details" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" style="display: none;">
+            <!-- Booking Form (Initially Hidden) -->
+            <div id="booking_form" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" style="display: none;">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">จองห้อง <span id="selected_room_number"></span></h3>
 
                     <div class="mt-4">
                         <h4 class="font-medium mb-2">ข้อมูลการจอง</h4>
-                        <form>
+                        <form method="POST" action="/hire" enctype="multipart/form-data" class="space-y-4">
+                            @csrf
+                            <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
+                            <input type="hidden" name="tenant_type" value="daily">
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <x-label for="guest_name" value="ชื่อผู้เข้าพัก" />
-                                    <x-input id="guest_name" type="text" class="block mt-1 w-full" placeholder="ชื่อ-นามสกุล" />
+                                    <x-label for="tenantName" value="ชื่อผู้เข้าพัก" />
+                                    <x-input id="tenantName" name="tenantName" type="text" class="block mt-1 w-full" placeholder="ชื่อ-นามสกุล" required />
                                 </div>
                                 <div>
-                                    <x-label for="guest_phone" value="เบอร์โทรศัพท์" />
-                                    <x-input id="guest_phone" type="text" class="block mt-1 w-full" placeholder="0xx-xxx-xxxx" />
+                                    <x-label for="tenantTel" value="เบอร์โทรศัพท์" />
+                                    <x-input id="tenantTel" name="tenantTel" type="text" class="block mt-1 w-full" placeholder="0xx-xxx-xxxx" required />
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <x-label for="check_in_date" value="วันที่เข้าพัก" />
-                                    <x-input id="check_in_date" type="date" class="block mt-1 w-full" />
+                                    <x-label for="checkin" value="วันที่เข้าพัก" />
+                                    <x-input id="checkin" name="checkin" type="date" class="block mt-1 w-full" required />
                                 </div>
                                 <div>
-                                    <x-label for="check_out_date" value="วันที่ออก" />
-                                    <x-input id="check_out_date" type="date" class="block mt-1 w-full" />
+                                    <x-label for="checkout" value="วันที่ออก" />
+                                    <x-input id="checkout" name="checkout" type="date" class="block mt-1 w-full" required />
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <x-label for="daily_rate" value="ราคาต่อวัน (บาท)" />
-                                    <x-input id="daily_rate" type="number" class="block mt-1 w-full" value="600" />
+                            <div>
+                                <x-label value="การชำระเงิน" />
+                                <div class="flex space-x-2 mt-1">
+                                    <button type="button" onclick="show_qr()" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">QR Code</button>
+                                    <button type="button" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">เงินสด</button>
                                 </div>
-                                <div>
-                                    <x-label for="num_guests" value="จำนวนผู้เข้าพัก" />
-                                    <x-input id="num_guests" type="number" class="block mt-1 w-full" value="1" min="1" />
-                                </div>
+                                <img style="display:none;" src="{{asset('images/rickroll.png')}}" alt="qr img" id="qr_img" class="mt-2 max-w-xs">
                             </div>
 
-                            <div class="mt-4">
-                                <x-button>
-                                    บันทึกการจอง
+                            <div>
+                                <x-label for="img" value="อัพโหลดสลิป" />
+                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1" required>
+                            </div>
+
+                            <div class="flex justify-end mt-4">
+                                <x-button type="button" class="bg-gray-500 hover:bg-gray-600 mr-2" onclick="hideBookingForm()">
+                                    ยกเลิก
+                                </x-button>
+                                <x-button type="submit" class="bg-green-600 hover:bg-green-700">
+                                    ยืนยันการจอง
                                 </x-button>
                             </div>
                         </form>
@@ -113,18 +143,83 @@
             </div>
 
             <script>
-                function select_this_room(roomNumber) {
-                    // Show room details section
-                    document.getElementById('room_details').style.display = 'block';
-                    document.getElementById('selected_room_number').textContent = roomNumber;
+                function select_this_room(roomId) {
+                    // Fetch the room details to get the room number
+                    fetch(`/room-bookings/${roomId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Display the room number in the UI
+                            document.getElementById("room_ID_select").innerHTML = data.room.roomNumber;
+                            document.getElementById("selected_room_number").textContent = data.room.roomNumber;
+
+                            // Set the room number for the booking form
+                            document.getElementById("room_ID_select_daily").value = data.room.roomNumber;
+                            document.getElementById("room_ID_select2").value = data.room.roomNumber;
+
+                            // Show room details section
+                            document.getElementById("room_details").classList.remove("hidden");
+
+                            // Display bookings
+                            displayBookings(data.bookings);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching room details:', error);
+                        });
+                }
+
+                function displayBookings(bookings) {
+                    const bookingList = document.getElementById('booking_list');
+                    bookingList.innerHTML = '';
+
+                    if (bookings.length === 0) {
+                        bookingList.innerHTML = '<p class="text-gray-500">ไม่พบการจองสำหรับห้องนี้</p>';
+                        return;
+                    }
+
+                    bookings.forEach(booking => {
+                        const bookingItem = document.createElement('div');
+                        bookingItem.className = 'p-2 border border-gray-200 rounded';
+
+                        const checkIn = new Date(booking.check_in).toLocaleDateString('th-TH');
+                        const checkOut = new Date(booking.check_out).toLocaleDateString('th-TH');
+
+                        // Convert booking type to Thai
+                        let bookingType = booking.booking_type;
+                        if (bookingType === 'daily') {
+                            bookingType = 'รายวัน';
+                        } else if (bookingType === 'monthly') {
+                            bookingType = 'รายเดือน';
+                        }
+
+                        bookingItem.innerHTML = `
+                            <p class="text-sm"><span class="font-medium">รหัสการจอง:</span> ${booking.bookingID}</p>
+                            <p class="text-sm"><span class="font-medium">ประเภท:</span> ${bookingType}</p>
+                            <p class="text-sm"><span class="font-medium">ระยะเวลา:</span> ${checkIn} ถึง ${checkOut}</p>
+                        `;
+
+                        bookingList.appendChild(bookingItem);
+                    });
+                }
+
+                function showBookingForm() {
+                    document.getElementById('booking_form').style.display = 'block';
 
                     // Set default dates (today and tomorrow)
                     const today = new Date();
                     const tomorrow = new Date();
                     tomorrow.setDate(today.getDate() + 1);
 
-                    document.getElementById('check_in_date').value = formatDate(today);
-                    document.getElementById('check_out_date').value = formatDate(tomorrow);
+                    document.getElementById('checkin').value = formatDate(today);
+                    document.getElementById('checkout').value = formatDate(tomorrow);
+                }
+
+                function hideBookingForm() {
+                    document.getElementById('booking_form').style.display = 'none';
                 }
 
                 function formatDate(date) {
@@ -132,6 +227,15 @@
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
                     return `${year}-${month}-${day}`;
+                }
+
+                function show_qr() {
+                    var qrImg = document.getElementById("qr_img");
+                    if (qrImg.style.display === "none") {
+                        qrImg.style.display = "block";
+                    } else {
+                        qrImg.style.display = "none";
+                    }
                 }
             </script>
         </div>
