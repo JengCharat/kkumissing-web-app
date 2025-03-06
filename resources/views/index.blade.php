@@ -85,58 +85,103 @@
                     </div>
 
                     <div class="mb-8">
+
                         <h4 class="text-md font-medium mb-2">ห้องฝั่งซ้าย</h4>
                         <div class="grid grid-cols-6 gap-2">
-                            @foreach ($Lrooms->chunk(6) as $room)
-                                @foreach ($room as $item)
-                                    @php
-                                        $isBooked = false;
-                                        if (isset($bookings) && isset($check_in) && isset($check_out)) {
-                                            $isBooked = isset($bookings[$item->roomID]);
-                                        }
-                                    @endphp
 
-                                    @if ($item->status == "Available" && !$isBooked)
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="room-button available">
+                        @foreach ($Lrooms->chunk(6) as $room)
+                            @foreach ($room as $item)
+                                @php
+                                    // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                    $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                @endphp
+
+                                @if (!$isBooked)
+                                    <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button available">
                                         {{ $item->roomNumber }}
                                     </button>
-                                    @else
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="room-button not-available">
+                                @else
+                                    <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button not-available">
                                         {{ $item->roomNumber }}
                                     </button>
-                                    @endif
-                                @endforeach
+                                @endif
                             @endforeach
+                        @endforeach
+                            {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
+                            {{--     @foreach ($room as $item) --}}
+                            {{--         @php --}}
+                            {{--             $isBooked = false; --}}
+                            {{--             if (isset($bookings) && isset($check_in) && isset($check_out)) { --}}
+                            {{--                 $isBooked = isset($bookings[$item->roomID]); --}}
+                            {{--             } --}}
+                            {{--         @endphp --}}
+                            {{----}}
+                            {{--         @if ($item->status == "Available" && !$isBooked) --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="room-button available"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--         @else --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="room-button not-available"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--         @endif --}}
+                            {{--     @endforeach --}}
+                            {{-- @endforeach --}}
                         </div>
                     </div>
 
                     <div class="mb-8">
                         <h4 class="text-md font-medium mb-2">ห้องฝั่งขวา</h4>
                         <div class="grid grid-cols-6 gap-2">
-                            @foreach ($Rrooms->chunk(6) as $room)
-                                @foreach ($room as $item)
-                                    @php
-                                        $isBooked = false;
-                                        if (isset($bookings) && isset($check_in) && isset($check_out)) {
-                                            $isBooked = isset($bookings[$item->roomID]);
-                                        }
-                                    @endphp
 
-                                    @if ($item->status == "Available" && !$isBooked)
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="room-button available">
+                    {{-- @if ($room_id_that_has_been_taken && count($room_id_that_has_been_taken) > 0) --}}
+                        @foreach ($Rrooms->chunk(6) as $room)
+                            @foreach ($room as $item)
+                                @php
+                                    // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                    $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                @endphp
+
+                                @if (!$isBooked)
+                                    <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button available">
                                         {{ $item->roomNumber }}
                                     </button>
-                                    @else
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="room-button not-available">
+                                @else
+                                    <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button not-available">
                                         {{ $item->roomNumber }}
                                     </button>
-                                    @endif
-                                @endforeach
+                                @endif
                             @endforeach
+                        @endforeach
+                    {{-- @endif --}}
+                            {{-- @foreach ($Rrooms->chunk(6) as $room) --}}
+                            {{--     @foreach ($room as $item) --}}
+                            {{--         @php --}}
+                            {{--             $isBooked = false; --}}
+                            {{--             if (isset($bookings) && isset($check_in) && isset($check_out)) { --}}
+                            {{--                 $isBooked = isset($bookings[$item->roomID]); --}}
+                            {{--             } --}}
+                            {{--         @endphp --}}
+                            {{----}}
+                            {{--         @if ($item->status == "Available" && !$isBooked) --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="room-button available"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--         @else --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="room-button not-available"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--         @endif --}}
+                            {{--     @endforeach --}}
+                            {{-- @endforeach --}}
                         </div>
                     </div>
                 </div>

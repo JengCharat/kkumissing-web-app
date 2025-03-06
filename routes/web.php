@@ -25,6 +25,8 @@ Route::get('/', [index_controller::class, 'index'])->name('index');
 Route::post('/hire', [index_controller::class, 'hire'])->name('hire');
 Route::get('/room-bookings/{roomId}', [index_controller::class, 'getRoomBookings'])->name('room.bookings');
 
+Route::get('/room_check', [index_controller::class, 'room_check']);
+
 // Authenticated routes
 Route::middleware([
     'auth:sanctum',
