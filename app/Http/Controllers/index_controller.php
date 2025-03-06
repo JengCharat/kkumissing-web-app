@@ -22,13 +22,21 @@ class index_controller extends Controller
         // Get all bookings if date filter is applied
         $bookings = null;
         if ($check_in && $check_out) {
-            $bookings = Booking::whereDate('check_in', '<=', $check_out)
-                ->whereDate('check_out', '>=', $check_in)
+            $bookings = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
                 ->get()
                 ->groupBy('room_id');
+
         }
 
-        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out'));
+        if($bookings && $bookings->isNotEmpty()){
+            $room_id_that_has_been_taken = $bookings->keys()->toArray();
+        }
+        else{
+            $room_id_that_has_been_taken = [];
+        }
+
+        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out','room_id_that_has_been_taken'));
     }
 
     public function getRoomBookings($roomId) {
@@ -66,7 +74,7 @@ class index_controller extends Controller
             $users->save();
         } else {
             // For daily tenants, use the admin user
-            $adminUser = User::where('email', 'admin@gmail.com')->first();
+            $adminUser = User::where('email', 'l101@gmail.com')->first();
             if (!$adminUser) {
                 abort(500, 'Admin user not found');
             }
