@@ -52,13 +52,37 @@ class AdminController extends Controller
     /**
      * Daily rooms management
      */
-    public function dailyRooms()
+    public function dailyRooms(Request $request)
     {
         // Get rooms with L and R prefixes
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms'));
+        $check_in = $request->check_in;
+        $check_out = $request->check_out;
+
+        // Get all bookings if date filter is applied
+        $bookings = null;
+        if ($check_in && $check_out) {
+            $bookings = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
+                ->get()
+                ->groupBy('room_id');
+
+        }
+
+        if($bookings && $bookings->isNotEmpty()){
+            $room_id_that_has_been_taken = $bookings->keys()->toArray();
+        }
+        else{
+            $room_id_that_has_been_taken = [];
+        }
+        // echo ("<h1>");
+        // echo("xxxxxxxxxxxx");
+        // echo($room_id_that_has_been_taken[0]);
+        // echo("</h1>");
+
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','room_id_that_has_been_taken'));
     }
 
     /**
