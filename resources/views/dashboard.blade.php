@@ -39,6 +39,14 @@
                             <br>
                             {{$status}}
                         </form>
+
+                        <button class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" onclick="printReceipt({{$bills_id}})">พิมพ์ใบเสร็จ</button>
+                        <script>
+                            function printReceipt(billId) {
+                                // Open a new window or tab with the receipt for printing
+                                window.open(`/dashboard/print-receipt/{{$bills_id}}`, '_blank');
+                            }
+                        </script>
                     </div>
                     <p class="text-sm text-blue-600">Please make your payment before the due date to avoid late fees.</p>
                 </div>

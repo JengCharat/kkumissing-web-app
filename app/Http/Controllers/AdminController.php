@@ -46,7 +46,7 @@ class AdminController extends Controller
         // ->leftJoin('tenants','contracts.tenant_id','=','tenants.tenantID')
         // ->select('tenants.tenantName')
         // ->first();
-        return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms','Rooms'));
+        return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms'));
     }
 
     /**
