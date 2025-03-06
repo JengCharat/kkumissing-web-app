@@ -271,6 +271,13 @@
                         <p id="detail_status" class="text-base text-gray-900 dark:text-gray-100">-</p>
                     </div>
                 </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">เอกสารสัญญา</p>
+                    <div id="contract_file_container" class="mt-2">
+                        <img id="contract_file_image" src="" alt="เอกสารสัญญา" class="max-w-full h-auto rounded-lg shadow-md hidden">
+                        <p id="no_contract_file" class="text-base text-gray-900 dark:text-gray-100">ไม่มีเอกสารสัญญา</p>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end">
@@ -376,6 +383,7 @@
                     const tenant = data.tenant;
                     const booking = data.booking;
                     const room = data.room;
+                    const contract = data.contract;
 
                     // Set tenant details
                     document.getElementById('detail_tenant_name').textContent = tenant.tenantName || 'ไม่ระบุ';
@@ -391,12 +399,26 @@
                     document.getElementById('detail_due_date').textContent = booking && booking.due_date ?
                         new Date(booking.due_date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
 
-                    // Set deposit - this is the key change we're making
+                    // Set deposit
                     document.getElementById('detail_deposit').textContent = booking && booking.deposit ?
                         booking.deposit + ' บาท' : 'ไม่ระบุ';
 
                     // Set status
                     document.getElementById('detail_status').textContent = room ? 'อยู่ระหว่างเช่า' : 'ไม่ได้เช่าห้อง';
+
+                    // Set contract file
+                    const contractFileImage = document.getElementById('contract_file_image');
+                    const noContractFile = document.getElementById('no_contract_file');
+                    
+                    if (contract && contract.contract_file) {
+                        // The contract_file path is already relative to storage
+                        contractFileImage.src = `/storage/${contract.contract_file}`;
+                        contractFileImage.classList.remove('hidden');
+                        noContractFile.classList.add('hidden');
+                    } else {
+                        contractFileImage.classList.add('hidden');
+                        noContractFile.classList.remove('hidden');
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching tenant details:', error);

@@ -654,10 +654,16 @@ class AdminController extends Controller
             $room = Room::find($booking->room_id);
         }
 
+        // Get contract for this tenant
+        $contract = Contract::where('tenant_id', $tenantId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
         return response()->json([
             'tenant' => $tenant,
             'booking' => $booking,
-            'room' => $room
+            'room' => $room,
+            'contract' => $contract
         ]);
     }
 
@@ -740,6 +746,16 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Bill not found');
             }
         } else {
+            // Check if a bill already exists for this room and month
+            $existingBill = Bill::where('roomID', $request->roomID)
+                ->whereYear('BillDate', $request->billing_year)
+                ->whereMonth('BillDate', $request->billing_month)
+                ->first();
+            
+            if ($existingBill) {
+                return redirect()->back()->with('error', 'ไม่สามารถออกบิลซ้ำในเดือนเดียวกันได้ กรุณาแก้ไขบิลที่มีอยู่แล้ว');
+            }
+            
             // Create a new bill
             $bill = new Bill();
             $tenantId = Contract::where('room_id',$request->roomID)->first();
