@@ -459,6 +459,7 @@
                     // Show alert first, then reload the page
                     alert('ทำการย้ายออกเสร็จสิ้น');
                     window.location.reload();
+                    alert('ทำการย้ายออกเสร็จสิ้น');
                 } else {
                     return response.text().then(text => {
                         throw new Error(text || 'Failed to delete tenant');
