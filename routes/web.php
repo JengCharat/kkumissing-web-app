@@ -34,6 +34,7 @@ Route::middleware([
     // Dashboard route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/upload_slip', [DashboardController::class, 'upload_slip']);
+    Route::get('/dashboard/print-receipt/{billId}', [DashboardController::class, 'printReceipt']);
 
     // Admin routes
     Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
@@ -215,7 +216,7 @@ Route::middleware([
 
         Route::get('/print-receipt/{billId}', function ($billId) {
             if (auth()->user()->usertype !== 'admin') {
-                return redirect('/dashboard');
+                return redirect('/dashboard/print-receipt/{billId}');
             }
             return app()->make(AdminController::class)->printReceipt($billId);
         })->name('admin.print-receipt');

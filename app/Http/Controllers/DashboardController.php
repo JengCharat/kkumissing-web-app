@@ -47,7 +47,8 @@ class DashboardController extends Controller
         ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time
         ->first();  // Get the first (most recent) record
         $status = $bills->status;
-        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','status'));
+        $bills_id = $bills->BillNo;
+        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','status','bills_id'));
     }
 
 
@@ -76,4 +77,16 @@ class DashboardController extends Controller
             return redirect('dashboard')->with('status', $status);
 
         }
+
+        public function printReceipt($billId)
+        {
+            $bill = Bill::with(['room', 'tenant'])->find($billId);
+            if (!$bill) {
+                return redirect()->back()->with('error', 'Bill not found');
+            }
+
+            // Return a view with the receipt
+            return view('admin.receipt', compact('bill'));
+        }
+
 }
