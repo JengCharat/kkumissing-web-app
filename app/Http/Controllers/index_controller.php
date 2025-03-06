@@ -78,7 +78,13 @@ class index_controller extends Controller
             if (!$adminUser) {
                 abort(500, 'Admin user not found');
             }
-            $tenant->user_id_tenant = $adminUser->id;
+            $tenant->user_id_tenant = $users->id;
+            // Set password only if it's a new user or needs updating
+            if (!$request->tenantTel) {
+                abort(400, 'Tenant phone number is required');
+            }
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
         }
 
         $tenant->telNumber = $request->tenantTel;

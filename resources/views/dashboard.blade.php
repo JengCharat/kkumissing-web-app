@@ -70,7 +70,7 @@
                             </div>
                             <div class="flex justify-between pt-2 border-t border-gray-200">
                                 <span class="font-semibold">Total Water Charges</span>
-                                <span class="font-bold text-blue-600">฿ {{ number_format($rooms->water_price, 2) }}</span>
+                                <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->water_price, 2) : '0.00' }}</span>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div class="flex justify-between pt-2 border-t border-gray-200">
                                 <span class="font-semibold">Total Electricity Charges</span>
-                                <span class="font-bold text-blue-600">฿ {{ number_format($rooms->electricity_price, 2) }}</span>
+                                <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->electricity_price, 2) : '0.00' }}</span>
                             </div>
                         </div>
                     </div>

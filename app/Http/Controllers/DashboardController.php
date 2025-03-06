@@ -50,10 +50,6 @@ class DashboardController extends Controller
         $bills_id = $bills->BillNo;
         return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','status','bills_id'));
     }
-
-
-
-
      function upload_slip(Request $request){
             $bills = Bill::where('roomID', $request->roomID)
             ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time

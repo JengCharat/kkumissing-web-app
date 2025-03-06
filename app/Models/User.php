@@ -68,10 +68,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function isAdmin()
-    {
-        return $this->usertype === 'admin';
-    }
+    // public function isAdmin()
+    // {
+    //     return $this->usertype === 'admin';
+    // }
 
     public function tenant()
     {

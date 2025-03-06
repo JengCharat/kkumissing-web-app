@@ -25,14 +25,14 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">รายชื่อลูกค้ารายเดือน</h3>
                         <div class="flex space-x-2">
-                            <div class="relative">
+                            {{-- <div class="relative">
                                 <input type="text" placeholder="ค้นหา..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
                                 </div>
-                            </div>
+                            </div> --}}
                             <x-button onclick="showAddTenantForm()">
                                 + เพิ่มลูกค้าใหม่
                             </x-button>
@@ -422,25 +422,28 @@
         }
 
         function deleteTenant(tenantId) {
-            // Send delete request to the server
+            // Create a form data object with CSRF token and _method=DELETE
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            formData.append('_method', 'DELETE');
+            
+            // Send delete request to the server using POST method with _method=DELETE
             fetch(`/admin/delete-monthly-tenant/${tenantId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                }
+                method: 'POST',
+                body: formData
             })
             .then(response => {
                 if (response.ok) {
                     // Reload the page to show updated tenant list
                     window.location.reload();
+                    alert('ทำการย้ายออกเสร็จสิ้น');
                 } else {
-                    throw new Error('Failed to delete tenant');
+                    throw new Error('Failed to delete booking');
                 }
             })
             .catch(error => {
-                console.error('Error deleting tenant:', error);
-                alert('เกิดข้อผิดพลาดในการลบข้อมูลลูกค้า');
+                console.error('Error deleting booking:', error);
+                alert('เกิดข้อผิดพลาดในการแจ้งย้ายออก');
                 hideDeleteConfirmation();
             });
         }

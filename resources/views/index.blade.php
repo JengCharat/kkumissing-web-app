@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Apartment Management</title>
+    <title>Apartment</title>
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <script src="{{ asset('js/script.js') }}"> </script>
     <!-- Include Tailwind CSS -->
@@ -76,12 +76,12 @@
                         <h4 class="text-md font-medium mb-2">รายละเอียดห้อง</h4>
                         <p class="mb-2">ประเภท: ห้องแอร์พร้อมเตียง ตู้เย็น และห้องน้ำ</p>
 
-                        <div id="booking_schedule" class="mt-4">
+                        {{-- <div id="booking_schedule" class="mt-4">
                             <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
                             <div id="booking_list" class="space-y-2">
                                 <!-- Booking entries will be populated here -->
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="mb-8">
