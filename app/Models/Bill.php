@@ -21,6 +21,7 @@ class Bill extends Model
         'total_price',
         'status',
         'room_rate',
+        'slip_file',
     ];
 
     protected $primaryKey = 'BillNo';

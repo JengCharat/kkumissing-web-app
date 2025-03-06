@@ -33,6 +33,7 @@ Route::middleware([
 ])->group(function () {
     // Dashboard route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/upload_slip', [DashboardController::class, 'upload_slip']);
 
     // Admin routes
     Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {

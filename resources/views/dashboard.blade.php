@@ -31,6 +31,16 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-semibold text-blue-800">Total Amount Due</h3>
                         <p class="text-2xl font-bold text-blue-800">฿ {{ $bill ? number_format($bill->water_price + $bill->electricity_price + $bill->room_rate, 2) : '0.00' }}</p>
+                        <form method = "post" action="/dashboard/upload_slip" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
+                            <input type="file" name = "slip_image">
+                            <button>PAY</button>
+                            <br>
+                            @if(session('status'))
+                                {{ session('status') }}
+                            @endif
+                        </form>
                     </div>
                     <p class="text-sm text-blue-600">Please make your payment before the due date to avoid late fees.</p>
                 </div>
@@ -85,7 +95,7 @@
             </div>
 
             <!-- Meter Information Card -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            {{-- <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Meter Information</h2>
                 <p class="text-gray-600 mb-4">Meter ID: {{$meter_reading->meterID}}</p>
 
@@ -93,7 +103,7 @@
                     <p class="text-sm text-gray-500 mb-2">Reading Period</p>
                     <p class="text-md">The current billing is based on meter readings taken for this period.</p>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </x-app-layout>
