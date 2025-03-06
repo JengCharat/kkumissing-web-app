@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            $table->string('status')->default('รอชำระเงิน')->after('total_price');
+            $table->string('slip_file')->nullable()->after('status');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            $table->dropColumn('status');
+            $table->dropColumn('slip_file');
         });
     }
 };

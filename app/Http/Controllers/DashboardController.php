@@ -9,6 +9,7 @@ use App\Models\Room;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use App\Models\Expense;
+use App\Models\Bill;
 class DashboardController extends Controller
 {
     //
@@ -34,14 +35,37 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'Meter details not found');
         }
 
-        $expense = Expense::where('expenseID', 1)->first();
+        // Get the latest bill for this room
+        $bill = Bill::where('roomID', $rooms->roomID)
+                    ->orderBy('BillDate', 'desc')
+                    ->first();
 
-        if ($expense) {
-            $rooms->water_price = (($meter_detail->water_meter_end) - ($meter_detail->water_meter_start)) * $expense->unit_price_water;
-            $rooms->electricity_price = (($meter_detail->electricity_meter_end) - ($meter_detail->electricity_meter_start)) * $expense->unit_price_electricity;
-            $rooms->save();
-        }
         //test
-        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail'));
+        return view('dashboard',compact('userId','rooms','meter_reading','meter_detail','bill'));
     }
+
+    function upload_slip(Request $request){
+        $bills = Bill::where('roomID', $request->roomID)
+        ->orderBy('created_at', 'desc')  // Order by the creation time
+        ->first();  // Get the first (most recent) record
+
+
+        $request->validate([
+            'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',
+        ]);
+
+        $file = $request->file('slip_image');
+
+        $filename = 'slip-image-date'.'-'."xxx" .'.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
+        $path = $file->storeAs('upload', $filename, 'public');
+        // $file->store('upload', 'public');
+        $bills->status = "ชำระแล้ว";
+        $bills->slip_file = $path;
+        $bills->save();
+
+        $status = $bills->status;
+        return redirect('dashboard')->with('status', $status);
+
+    }
+
 }

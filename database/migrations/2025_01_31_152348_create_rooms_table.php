@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('roomNumber');
             $table->string('status')->default('Available'); // e.g., 'available', 'not available'
             $table->decimal('daily_rate', 10, 2)->nullable();
-            $table->decimal('water_price', 10, 2)->nullable();
-            $table->decimal('electricity_price', 10, 2)->nullable();
-            $table->decimal('overdue_fee_rate', 10, 2)->nullable();
+            $table->decimal('month_rate', 10, 2)->default(4000.00);
             $table->timestamps();
         });
     }

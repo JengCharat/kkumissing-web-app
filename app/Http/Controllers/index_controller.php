@@ -65,12 +65,18 @@ class index_controller extends Controller
             $users->password = bcrypt($request->tenantTel);
             $users->save();
         } else {
-            // For daily tenants, use the admin user
-            $adminUser = User::where('email', 'admin@gmail.com')->first();
-            if (!$adminUser) {
-                abort(500, 'Admin user not found');
+            // For daily tenants, use the room's user just like monthly tenants
+            $users = User::where('name', $request->roomNumber)->first();
+            if (!$users) {
+                abort(500, 'User for this room not found');
             }
-            $tenant->user_id_tenant = $adminUser->id;
+            $tenant->user_id_tenant = $users->id;
+            // Set password only if it's a new user or needs updating
+            if (!$request->tenantTel) {
+                abort(400, 'Tenant phone number is required');
+            }
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
         }
 
         $tenant->telNumber = $request->tenantTel;

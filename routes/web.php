@@ -247,5 +247,41 @@ Route::middleware([
             }
             return app()->make(AdminController::class)->deleteMonthlyTenant($tenantID);
         })->name('admin.delete-monthly-tenant');
+
+        // Daily tenant management routes
+        Route::get('/get-available-rooms-daily', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getAvailableRoomsForDaily();
+        })->name('admin.get-available-rooms-daily');
+
+        Route::post('/create-daily-tenant', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->createDailyTenant(request());
+        })->name('admin.create-daily-tenant');
+
+        Route::post('/update-daily-tenant', function () {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->updateDailyTenant(request());
+        })->name('admin.update-daily-tenant');
+
+        Route::delete('/delete-daily-tenant/{tenantID}', function ($tenantID) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->deleteDailyTenant($tenantID);
+        })->name('admin.delete-daily-tenant');
+
+        Route::get('/get-daily-tenant-details/{tenantId}', function ($tenantId) {
+            if (auth()->user()->usertype !== 'admin') {
+                return redirect('/dashboard');
+            }
+            return app()->make(AdminController::class)->getDailyTenantDetails($tenantId);
+        })->name('admin.get-daily-tenant-details');
     });
 });

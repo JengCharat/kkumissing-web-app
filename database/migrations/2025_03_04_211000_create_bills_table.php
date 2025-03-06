@@ -16,11 +16,13 @@ return new class extends Migration
             $table->foreignId('roomID')->constrained('rooms', 'roomID');
             $table->foreignId('tenantID')->constrained('tenants', 'tenantID');
             $table->date('BillDate');
+            $table->decimal('room_rate', 10, 2)->nullable();
             $table->decimal('damage_fee', 10, 2)->nullable();
             $table->decimal('overdue_fee', 10, 2)->nullable();
             $table->decimal('water_price', 10, 2)->nullable();
             $table->decimal('electricity_price', 10, 2)->nullable();
             $table->decimal('total_price', 10, 2)->nullable();
+            $table->string('status')->default('รอชำระเงิน');
             $table->timestamps();
         });
     }

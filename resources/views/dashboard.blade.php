@@ -30,7 +30,7 @@
                 <div class="bg-blue-50 p-6 rounded-lg mb-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-semibold text-blue-800">Total Amount Due</h3>
-                        <p class="text-2xl font-bold text-blue-800">฿ {{ number_format($rooms->water_price + $rooms->electricity_price, 2) }}</p>
+                        <p class="text-2xl font-bold text-blue-800">฿ {{ $bill ? number_format($bill->water_price + $bill->electricity_price + $bill->room_rate, 2) : '0.00' }}</p>
                     </div>
                     <p class="text-sm text-blue-600">Please make your payment before the due date to avoid late fees.</p>
                 </div>
@@ -54,7 +54,7 @@
                             </div>
                             <div class="flex justify-between pt-2 border-t border-gray-200">
                                 <span class="font-semibold">Total Water Charges</span>
-                                <span class="font-bold text-blue-600">฿ {{ number_format($rooms->water_price, 2) }}</span>
+                                <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->water_price, 2) : '0.00' }}</span>
                             </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@
                             </div>
                             <div class="flex justify-between pt-2 border-t border-gray-200">
                                 <span class="font-semibold">Total Electricity Charges</span>
-                                <span class="font-bold text-blue-600">฿ {{ number_format($rooms->electricity_price, 2) }}</span>
+                                <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->electricity_price, 2) : '0.00' }}</span>
                             </div>
                         </div>
                     </div>
