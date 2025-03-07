@@ -456,15 +456,17 @@
             })
             .then(response => {
                 if (response.ok) {
-                    // Reload the page to show updated tenant list
-                    window.location.reload();
+                    // Show alert first, then reload the page
                     alert('ทำการย้ายออกเสร็จสิ้น');
+                    window.location.reload();
                 } else {
-                    throw new Error('Failed to delete booking');
+                    return response.text().then(text => {
+                        throw new Error(text || 'Failed to delete tenant');
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error deleting booking:', error);
+                console.error('Error deleting tenant:', error);
                 alert('เกิดข้อผิดพลาดในการแจ้งย้ายออก');
                 hideDeleteConfirmation();
             });
