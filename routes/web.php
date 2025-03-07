@@ -63,12 +63,13 @@ Route::middleware([
             return app()->make(AdminController::class)->monthlyRooms();
         })->name('admin.monthly-rooms');
 
-        Route::get('/daily-rooms', function () {
-            if (auth()->user()->usertype !== 'admin') {
-                return redirect('/dashboard');
-            }
-            return app()->make(AdminController::class)->dailyRooms();
-        })->name('admin.daily-rooms');
+        Route::get('/daily-rooms', [AdminController::class, 'dailyRooms'])->name('admin.daily-rooms');;
+        // Route::get('/daily-rooms', function () {
+        //     if (auth()->user()->usertype !== 'admin') {
+        //         return redirect('/dashboard');
+        //     }
+        //     return app()->make(AdminController::class)->dailyRooms();
+        // })->name('admin.daily-rooms');
 
         // Payment routes
         Route::get('/pending-payments', function () {

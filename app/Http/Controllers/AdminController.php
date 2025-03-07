@@ -52,13 +52,40 @@ class AdminController extends Controller
     /**
      * Daily rooms management
      */
-    public function dailyRooms()
+    public function dailyRooms(Request $request)
     {
         // Get rooms with L and R prefixes
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms'));
+        $check_in = $request->check_in;
+        $check_out = $request->check_out;
+
+        // Get all bookings if date filter is applied
+        $bookings = null;
+        if ($check_in && $check_out) {
+            $bookings = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
+                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
+                ->where('tenants.tenant_type', 'daily')
+                ->select('contracts.*','tenants.*')
+                ->orderBy('contracts.start_date', 'asc')
+                ->get()
+                ->groupBy('room_id');
+        }
+        if($bookings && $bookings->isNotEmpty()){
+            $daily_room_id_that_has_been_taken = $bookings;
+        }
+        else{
+            $daily_room_id_that_has_been_taken = [];
+        }
+        // echo ("<h1>");
+        // echo("xxxxxxxxxxxx");
+        // echo($daily_room_id_that_has_been_taken[0]);
+        // echo($bookings);
+        // echo("</h1>");
+
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken'));
     }
 
     /**

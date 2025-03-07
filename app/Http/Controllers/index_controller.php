@@ -16,7 +16,7 @@ class index_controller extends Controller
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        $check_in = $request->check_in;
+       $check_in = $request->check_in;
         $check_out = $request->check_out;
 
         // Get all bookings if date filter is applied
@@ -55,9 +55,9 @@ class index_controller extends Controller
     public function hire(Request $request){
         $roomNumber = $request->roomNumber;
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
-        if($room->status == "Not Available"){
-            abort(404);
-        }
+        // if($room->status == "Not Available"){
+        //     abort(404);
+        // }
         $room->update([
             'status' => "Not Available",
         ]);
