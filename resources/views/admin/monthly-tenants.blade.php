@@ -460,6 +460,7 @@
                     alert('ทำการย้ายออกเสร็จสิ้น');
                     window.location.reload();
                     alert('ทำการย้ายออกเสร็จสิ้น');
+                    window.location.reload();
                 } else {
                     return response.text().then(text => {
                         throw new Error(text || 'Failed to delete tenant');
