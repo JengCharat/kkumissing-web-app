@@ -42,13 +42,13 @@
                                 <p class="text-sm text-green-600">ขอบคุณสำหรับการชำระเงิน</p>
                             </div>
                             <div></div> <!-- Empty div to maintain the flex layout -->
-                        @else
+                        @elseif($bill)
                             <p class="text-2xl font-bold text-blue-800">
-                                ฿ {{ $bill ? number_format($bill->water_price + $bill->electricity_price + $bill->room_rate + $bill->damage_fee + $bill->overdue_fee, 2) : '0.00' }}</p>
-                            <form method = "post" action="/dashboard/upload_slip" enctype="multipart/form-data">
+                                ฿ {{ number_format($bill->water_price + $bill->electricity_price + $bill->room_rate + $bill->damage_fee + $bill->overdue_fee, 2) }}</p>
+                            <form method="post" action="/dashboard/upload_slip" enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
-                                <input type="file" name = "slip_image" class="block w-full text-sm text-gray-500
+                                <input type="file" name="slip_image" class="block w-full text-sm text-gray-500
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
                                     file:text-sm file:font-semibold
@@ -59,37 +59,44 @@
                                 @if(session('status'))
                                     <span class="text-green-600 font-semibold">{{ session('status') }}</span>
                                 @endif
+                                @if(session('error'))
+                                    <span class="text-red-600 font-semibold">{{ session('error') }}</span>
+                                @endif
                             </form>
+                        @else
+                            <div class="text-center">
+                                <p class="text-xl font-bold text-gray-600">ไม่พบข้อมูลบิล</p>
+                                <p class="text-sm text-gray-600">กรุณาติดต่อผู้ดูแลระบบ</p>
+                            </div>
+                            <div></div> <!-- Empty div to maintain the flex layout -->
                         @endif
                     </div>
 
-                    @if(!$bill || $bill->status != 'ชำระแล้ว')
+                    @if($bill && $bill->status != 'ชำระแล้ว')
                         <p class="text-sm text-blue-600">กรุณาชำระเงินก่อนวันครบกำหนดเพื่อหลีกเลี่ยงค่าปรับล่าช้า</p>
                     @endif
                 </div>
 
-                @if(!$bill || $bill->status != 'ชำระแล้ว')
+                @if($bill && $bill->status != 'ชำระแล้ว')
                     <!-- Additional Fees Card -->
                     <div class="border border-gray-200 rounded-lg p-4 mb-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-3">ค่าใช้จ่ายเพิ่มเติม</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-gray-50 p-3 rounded">
                                 <span class="text-gray-600">ค่าเช่าห้อง</span>
-                                <p class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->room_rate, 2) : '0.00' }}</p>
+                                <p class="font-bold text-blue-600">฿ {{ number_format($bill->room_rate, 2) }}</p>
                             </div>
                             <div class="bg-gray-50 p-3 rounded">
                                 <span class="text-gray-600">ค่าเสียหาย</span>
-                                <p class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->damage_fee, 2) : '0.00' }}</p>
+                                <p class="font-bold text-blue-600">฿ {{ number_format($bill->damage_fee, 2) }}</p>
                             </div>
                             <div class="bg-gray-50 p-3 rounded">
                                 <span class="text-gray-600">ค่าปรับล่าช้า</span>
-                                <p class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->overdue_fee, 2) : '0.00' }}</p>
+                                <p class="font-bold text-blue-600">฿ {{ number_format($bill->overdue_fee, 2) }}</p>
                             </div>
                         </div>
                     </div>
-                @endif
 
-                @if(!$bill || $bill->status != 'ชำระแล้ว')
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Water Charges -->
                         <div class="border border-gray-200 rounded-lg p-4">
@@ -109,7 +116,7 @@
                                 </div>
                                 <div class="flex justify-between pt-2 border-t border-gray-200">
                                     <span class="font-semibold">ค่าน้ำรวม</span>
-                                    <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->water_price, 2) : '0.00' }}</span>
+                                    <span class="font-bold text-blue-600">฿ {{ number_format($bill->water_price, 2) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -132,15 +139,20 @@
                                 </div>
                                 <div class="flex justify-between pt-2 border-t border-gray-200">
                                     <span class="font-semibold">ค่าไฟฟ้ารวม</span>
-                                    <span class="font-bold text-blue-600">฿ {{ $bill ? number_format($bill->electricity_price, 2) : '0.00' }}</span>
+                                    <span class="font-bold text-blue-600">฿ {{ number_format($bill->electricity_price, 2) }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @else
+                @elseif($bill && $bill->status == 'ชำระแล้ว')
                     <div class="bg-green-50 p-6 rounded-lg text-center">
                         <p class="text-lg text-green-700">ไม่มีค่าใช้จ่ายที่ต้องชำระในขณะนี้</p>
                         <p class="text-sm text-green-600">ระบบจะแสดงค่าใช้จ่ายเมื่อมีการออกบิลใหม่</p>
+                    </div>
+                @else
+                    <div class="bg-yellow-50 p-6 rounded-lg text-center">
+                        <p class="text-lg text-yellow-700">ไม่พบข้อมูลบิล</p>
+                        <p class="text-sm text-yellow-600">กรุณาติดต่อผู้ดูแลระบบเพื่อสร้างบิลใหม่</p>
                     </div>
                 @endif
             </div>
