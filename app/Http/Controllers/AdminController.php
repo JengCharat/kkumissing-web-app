@@ -12,6 +12,7 @@ use App\Models\Contract;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
@@ -55,6 +56,30 @@ class AdminController extends Controller
         $check_in = $request->checkin ?? $request->check_in;
         $check_out = $request->checkout ?? $request->check_out;
 
+        $bills = Bill::all();
+        $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+
+        $month_price = Bill::all();
+
+
+            $monthly_totals = [];
+            $month_date = [];
+
+            // สร้าง loop เพื่อรวมยอดตามเดือน
+            foreach ($month_price as $item) {
+                $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+                $month_date[] = $month;
+
+                if (!isset($monthly_totals[$month])) {
+                    $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+                }
+
+                // บวกยอดราคาในเดือนนั้น
+                $monthly_totals[$month] += $item->total_price;
+            }
+            $month_date = array_unique($month_date);
+
         // Get all bookings if date filter is applied
         $bookings = null;
         $bookings_month = null;
@@ -92,7 +117,7 @@ class AdminController extends Controller
             $monthly_room_id_that_has_been_taken = [];
         }
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out', 'monthly_totals', 'month_date'));
     }
 
     /**
