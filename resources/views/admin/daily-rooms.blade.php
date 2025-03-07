@@ -51,17 +51,114 @@
                         </div> --}}
                     </div>
 
+
+
+
+                    <form action="{{ route('admin.daily-rooms') }}" method="GET" class="flex flex-wrap gap-4">
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">เช็คอิน</label>
+                                <input type="date" name="check_in" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">เช็คเอาท์</label>
+                                <input type="date" name="check_out" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">กรอง</button>
+                                @if(isset($check_in) || isset($check_out))
+                                    <a href="{{ route('index') }}" class="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">ล้าง</a>
+                                @endif
+                            </div>
+                        </form>
+
                     <div class="mb-8">
                         <h4 class="text-md font-medium mb-2">Left Rooms</h4>
                         <div class="grid grid-cols-6 gap-2">
+
+                            {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
+                            {{--     @foreach ($room as $item) --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--     @endforeach --}}
+                            {{-- @endforeach --}}
+
                             @foreach ($Lrooms->chunk(6) as $room)
                                 @foreach ($room as $item)
+                                    @php
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        try {
+                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($daily_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $room_hasbeen_taken_id_array = $daily_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                $room_hasbeen_taken_id_array = [];
+                                            }
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $room_hasbeen_taken_id_array = [];
+                                        }
+                                        $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
+                                    @endphp
+
+                                    @if (!$isBooked)
+                                        <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
                                     <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
+                                            class="p-2 text-center rounded bg-green-500 hover:bg-green-600">
                                         {{ $item->roomNumber }}
                                     </button>
+                                    @else
+                                        <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
+                                        <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
+                                            {{ $item->roomNumber }}
+                                            <br>
+                                            tenant name
+                                            <br>
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
+                                            {{-- option nal ป้องกันค่าเป็น null ถ้าไม่มีก็เป็น null --}}
+                                            {{-- $daily_room_id_that_has_been_taken → เป็น Collection ที่ได้จาก groupBy('room_id') --}}
+                                            {{-- [$item->roomID] → ดึงข้อมูลของห้องที่มี roomID เท่ากับ $item->roomID --}}
+                                            {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
+                                        </button>
+                                    @endif
+
+                                    @php
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        try {
+                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($monthly_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $monthly_room_hasbeen_taken_id_array = $monthly_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                $monthly_room_hasbeen_taken_id_array = [];
+                                            }
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $montlyroom_hasbeen_taken_id_array = [];
+                                        }
+                                            $ismonthlyBooked = in_array($item->roomID, $monthly_room_hasbeen_taken_id_array);
+                                    @endphp
+
+                                    @if ($ismonthlyBooked)
+                                        <button onclick="select_this_room('{{ $item->roomID }}')"
+                                                class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
+                                            {{ $item->roomNumber }}
+                                            <h1>this is monthly room</h1>
+                                        </button>
+                                    @endif
                                 @endforeach
                             @endforeach
+                            {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
+                            {{--     @foreach ($room as $item) --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--     @endforeach --}}
+                            {{-- @endforeach --}}
                         </div>
                     </div>
 

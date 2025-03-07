@@ -45,26 +45,54 @@ class AdminController extends Controller
     /**
      * Daily rooms management
      */
-    public function dailyRooms()
+    public function dailyRooms(Request $request)
     {
         // Get rooms with L and R prefixes
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms'));
-    }
+        $check_in = $request->check_in;
+        $check_out = $request->check_out;
 
-    /**
-     * Pending payments management
-     */
-    public function pendingPayments()
-    {
-        $pendingBills = Bill::where('status', 'รอชำระเงิน')
-            ->with(['room', 'tenant'])
-            ->orderBy('BillDate', 'desc')
-            ->get();
+        // Get all bookings if date filter is applied
+        $bookings = null;
+        $bookings_month = null;
+        if ($check_in && $check_out) {
+            $bookings = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
+                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
+                ->where('tenants.tenant_type', 'daily')
+                ->select('contracts.*','tenants.*')
+                ->orderBy('contracts.start_date', 'desc')
+                ->get()
+                ->groupBy('room_id');
 
-        return view('admin.pending-payments', compact('pendingBills'));
+
+
+            $bookings_month = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
+                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
+                ->where('tenants.tenant_type', 'monthly')
+                ->select('contracts.*','tenants.*')
+                ->orderBy('contracts.start_date', 'desc')
+                ->get()
+                ->groupBy('room_id');
+        }
+        if($bookings && $bookings->isNotEmpty()){
+            $daily_room_id_that_has_been_taken = $bookings;
+            $monthly_room_id_that_has_been_taken = $bookings_month;
+        }
+        else{
+            $daily_room_id_that_has_been_taken = [];
+            $monthly_room_id_that_has_been_taken = [];
+        }
+        // echo ("<h1>");
+        // echo("xxxxxxxxxxxx");
+        // echo($daily_room_id_that_has_been_taken[0]);
+        // echo($bookings);
+        // echo("</h1>");
+
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
     }
 
     /**
@@ -703,11 +731,11 @@ class AdminController extends Controller
                 ->whereYear('BillDate', $request->billing_year)
                 ->whereMonth('BillDate', $request->billing_month)
                 ->first();
-            
+
             if ($existingBill) {
                 return redirect()->back()->with('error', 'ไม่สามารถออกบิลซ้ำในเดือนเดียวกันได้ กรุณาแก้ไขบิลที่มีอยู่แล้ว');
             }
-            
+
             // Create a new bill
             $bill = new Bill();
         }
@@ -900,4 +928,13 @@ class AdminController extends Controller
 
         return redirect()->route('admin.monthly-tenants')->with('success', 'เพิ่มลูกค้ารายเดือนเรียบร้อยแล้ว');
     }
+    public function pendingPayments()
+        {
+            $pendingBills = Bill::where('status', 'รอชำระเงิน')
+                ->with(['room', 'tenant'])
+                ->orderBy('BillDate', 'desc')
+                ->get();
+
+            return view('admin.pending-payments', compact('pendingBills'));
+        }
 }
