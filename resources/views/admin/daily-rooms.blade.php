@@ -81,6 +81,7 @@
                     <div class="mb-8">
                         <h4 class="text-md font-medium mb-2">Left Rooms</h4>
                         <div class="grid grid-cols-6 gap-2">
+
                             {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
                             {{--     @foreach ($room as $item) --}}
                             {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
@@ -94,7 +95,19 @@
                                 @foreach ($room as $item)
                                     @php
                                         // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
-                                        $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                        try {
+                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($daily_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $room_hasbeen_taken_id_array = $daily_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                $room_hasbeen_taken_id_array = [];
+                                            }
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $room_hasbeen_taken_id_array = [];
+                                        }
+                                        $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
                                     @endphp
 
                                     @if (!$isBooked)
@@ -107,6 +120,15 @@
                                         <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
                                         <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
                                             {{ $item->roomNumber }}
+                                            <br>
+                                            tenant name
+                                            <br>
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
+                                            {{-- option nal ป้องกันค่าเป็น null ถ้าไม่มีก็เป็น null --}}
+                                            {{-- $daily_room_id_that_has_been_taken → เป็น Collection ที่ได้จาก groupBy('room_id') --}}
+                                            {{-- [$item->roomID] → ดึงข้อมูลของห้องที่มี roomID เท่ากับ $item->roomID --}}
+                                            {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
                                         </button>
                                     @endif
                                 @endforeach
@@ -125,11 +147,23 @@
                             {{--         </button> --}}
                             {{--     @endforeach --}}
                             {{-- @endforeach --}}
-                            @foreach ($Lrooms->chunk(6) as $room)
+                            @foreach ($Rrooms->chunk(6) as $room)
                                 @foreach ($room as $item)
                                     @php
+                                            try {
+                                                // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                                if (is_a($daily_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                    $room_hasbeen_taken_id_array = $daily_room_id_that_has_been_taken->keys()->toArray();
+                                                } else {
+                                                    // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                    $room_hasbeen_taken_id_array = [];
+                                                }
+                                            } catch (Exception $e) {
+                                                // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                                $room_hasbeen_taken_id_array = [];
+                                            }
                                         // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
-                                        $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                        $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
                                     @endphp
 
                                     @if (!$isBooked)
@@ -142,6 +176,16 @@
                                         <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
                                         <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
                                             {{ $item->roomNumber }}
+
+                                            <br>
+                                            tenant name
+                                            <br>
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
+                                            {{-- option nal ป้องกันค่าเป็น null ถ้าไม่มีก็เป็น null --}}
+                                            {{-- $daily_room_id_that_has_been_taken → เป็น Collection ที่ได้จาก groupBy('room_id') --}}
+                                            {{-- [$item->roomID] → ดึงข้อมูลของห้องที่มี roomID เท่ากับ $item->roomID --}}
+                                            {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
                                         </button>
                                     @endif
                                 @endforeach

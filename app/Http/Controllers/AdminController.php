@@ -66,23 +66,26 @@ class AdminController extends Controller
         if ($check_in && $check_out) {
             $bookings = Contract::whereDate('start_date', '<=', $check_out)
                 ->whereDate('end_date', '>=', $check_in)
+                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
+                ->where('tenants.tenant_type', 'daily')
+                ->select('contracts.*','tenants.*')
+                ->orderBy('contracts.start_date', 'asc')
                 ->get()
                 ->groupBy('room_id');
-
         }
-
         if($bookings && $bookings->isNotEmpty()){
-            $room_id_that_has_been_taken = $bookings->keys()->toArray();
+            $daily_room_id_that_has_been_taken = $bookings;
         }
         else{
-            $room_id_that_has_been_taken = [];
+            $daily_room_id_that_has_been_taken = [];
         }
         // echo ("<h1>");
         // echo("xxxxxxxxxxxx");
-        // echo($room_id_that_has_been_taken[0]);
+        // echo($daily_room_id_that_has_been_taken[0]);
+        // echo($bookings);
         // echo("</h1>");
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','room_id_that_has_been_taken'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken'));
     }
 
     /**
