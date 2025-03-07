@@ -63,21 +63,35 @@ class AdminController extends Controller
 
         // Get all bookings if date filter is applied
         $bookings = null;
+        $bookings_month = null;
         if ($check_in && $check_out) {
             $bookings = Contract::whereDate('start_date', '<=', $check_out)
                 ->whereDate('end_date', '>=', $check_in)
                 ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
                 ->where('tenants.tenant_type', 'daily')
                 ->select('contracts.*','tenants.*')
-                ->orderBy('contracts.start_date', 'asc')
+                ->orderBy('contracts.start_date', 'desc')
+                ->get()
+                ->groupBy('room_id');
+
+
+
+            $bookings_month = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
+                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
+                ->where('tenants.tenant_type', 'monthly')
+                ->select('contracts.*','tenants.*')
+                ->orderBy('contracts.start_date', 'desc')
                 ->get()
                 ->groupBy('room_id');
         }
         if($bookings && $bookings->isNotEmpty()){
             $daily_room_id_that_has_been_taken = $bookings;
+            $monthly_room_id_that_has_been_taken = $bookings_month;
         }
         else{
             $daily_room_id_that_has_been_taken = [];
+            $monthly_room_id_that_has_been_taken = [];
         }
         // echo ("<h1>");
         // echo("xxxxxxxxxxxx");
@@ -85,7 +99,7 @@ class AdminController extends Controller
         // echo($bookings);
         // echo("</h1>");
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
     }
 
     /**
