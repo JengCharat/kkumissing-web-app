@@ -1,31 +1,4 @@
 <x-admin-layout>
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
-    </script>
-        <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
-    <script>
-        const xValues = [@foreach ($month_date as $item)'{{$item}}',@endforeach];
-        const yValues =[@foreach ($monthly_totals as $item){{$item}},@endforeach];
-        new Chart("myChart", {
-        type: "bar",
-        data: {
-            labels: xValues,
-            datasets: [{
-            fill: false,
-            lineTension: 0,
-            backgroundColor: "rgba(0,0,255,1.0)",
-            borderColor: "rgba(0,0,255,0.1)",
-            data: yValues
-            }]
-        },
-        options: {
-            legend: {display: false},
-            scales: {
-            yAxes: [{ticks: {min: 1 , max:100000}}],
-            }
-        }
-        });
-    </script>
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">

@@ -21,7 +21,7 @@
         .admin-sidebar {
             width: 240px;
             min-height: 100vh;
-            background-color: #2d3748;
+            background-color: #1a5d1a;
             color: white;
             position: fixed;
             left: 0;
@@ -94,7 +94,7 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-gradient-to-r from-green-400 to-green-700 dark:from-green-700 dark:to-green-900">
         <!-- Sidebar Navigation -->
         <div class="admin-sidebar" id="sidebar">
             <div class="sidebar-header">

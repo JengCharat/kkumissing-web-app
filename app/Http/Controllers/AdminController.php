@@ -63,29 +63,29 @@ class AdminController extends Controller
         $check_in = $request->checkin ?? $request->check_in;
         $check_out = $request->checkout ?? $request->check_out;
 
-        $bills = Bill::all();
-        $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
-        $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+        // $bills = Bill::all();
+        // $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        // $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
 
-        $month_price = Bill::all();
+        // $month_price = Bill::all();
 
 
-            $monthly_totals = [];
-            $month_date = [];
+        //     $monthly_totals = [];
+        //     $month_date = [];
 
-            // สร้าง loop เพื่อรวมยอดตามเดือน
-            foreach ($month_price as $item) {
-                $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
-                $month_date[] = $month;
+        //     // สร้าง loop เพื่อรวมยอดตามเดือน
+        //     foreach ($month_price as $item) {
+        //         $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+        //         $month_date[] = $month;
 
-                if (!isset($monthly_totals[$month])) {
-                    $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
-                }
+        //         if (!isset($monthly_totals[$month])) {
+        //             $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+        //         }
 
-                // บวกยอดราคาในเดือนนั้น
-                $monthly_totals[$month] += $item->total_price;
-            }
-            $month_date = array_unique($month_date);
+        //         // บวกยอดราคาในเดือนนั้น
+        //         $monthly_totals[$month] += $item->total_price;
+        //     }
+        //     $month_date = array_unique($month_date);
 
         // Get all bookings if date filter is applied
         $bookings = null;
@@ -124,7 +124,7 @@ class AdminController extends Controller
             $monthly_room_id_that_has_been_taken = [];
         }
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out', 'monthly_totals', 'month_date'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
     }
 
         // Get all bookings if date filter is applied
@@ -224,9 +224,9 @@ class AdminController extends Controller
             return redirect()->route('admin.monthly-tenants')->with('error', 'ไม่พบข้อมูลลูกค้า');
         }
 
-        // Get booking for this tenant
-        $booking = Booking::where('tenant_id', $tenantID)->first();
-        if ($booking) {
+        // Get all bookings for this tenant
+        $bookings = Booking::where('tenant_id', $tenantID)->get();
+        foreach ($bookings as $booking) {
             // Get room for this booking
             $room = Room::find($booking->room_id);
             if ($room) {
@@ -262,6 +262,9 @@ class AdminController extends Controller
 
         // Delete contracts
         Contract::where('tenant_id', $tenantID)->delete();
+
+        // Delete bills associated with this tenant
+        Bill::where('tenantID', $tenantID)->delete();
 
         // Delete tenant
         $tenant->delete();
@@ -590,10 +593,38 @@ class AdminController extends Controller
         $unit_price_water = $latestExpense ? $latestExpense->unit_price_water : null;
         $unit_price_electricity = $latestExpense ? $latestExpense->unit_price_electricity : null;
 
+
+        $check_in = $request->checkin ?? date('Y-m-d');
+        $check_out = $request->checkout ?? date('Y-m-d');
+
+        $bills = Bill::all();
+        $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+
+        $month_price = Bill::all();
+
+
+            $monthly_totals = [];
+            $month_date = [];
+
+            // สร้าง loop เพื่อรวมยอดตามเดือน
+            foreach ($month_price as $item) {
+                $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+                $month_date[] = $month;
+
+                if (!isset($monthly_totals[$month])) {
+                    $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+                }
+
+                // บวกยอดราคาในเดือนนั้น
+                $monthly_totals[$month] += $item->total_price;
+            }
+            $month_date = array_unique($month_date);
+
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
 
-        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings'));
+        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings', 'monthly_totals', 'month_date'));
     }
 
     public function updateUnitPrices(Request $request)
