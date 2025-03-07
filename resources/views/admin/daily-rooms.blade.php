@@ -131,6 +131,31 @@
                                             {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
                                         </button>
                                     @endif
+
+                                    @php
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        try {
+                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($monthly_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $monthly_room_hasbeen_taken_id_array = $monthly_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                $monthly_room_hasbeen_taken_id_array = [];
+                                            }
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $montlyroom_hasbeen_taken_id_array = [];
+                                        }
+                                            $ismonthlyBooked = in_array($item->roomID, $monthly_room_hasbeen_taken_id_array);
+                                    @endphp
+
+                                    @if ($ismonthlyBooked)
+                                        <button onclick="select_this_room('{{ $item->roomID }}')"
+                                                class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
+                                            {{ $item->roomNumber }}
+                                            <h1>this is monthly room</h1>
+                                        </button>
+                                    @endif
                                 @endforeach
                             @endforeach
                         </div>
