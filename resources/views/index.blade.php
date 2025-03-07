@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Apartment Management</title>
+    <title>Apartment</title>
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <script src="{{ asset('js/script.js') }}"> </script>
     <!-- Include Tailwind CSS -->

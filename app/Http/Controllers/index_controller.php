@@ -28,7 +28,6 @@ public function index(Request $request){
                 ->whereDate('end_date', '>=', $check_in)
                 ->get()
                 ->groupBy('room_id');
-
         }
 
         if($bookings && $bookings->isNotEmpty()){
@@ -200,7 +199,7 @@ public function index(Request $request){
         $booking->save();
 
         // Check if the user is an admin and redirect accordingly
-        if (auth()->check() && auth()->user()->usertype === 'admin') {
+        if (auth()->check() && auth()->user() && auth()->user()->usertype === 'admin') {
             return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
         }
 
