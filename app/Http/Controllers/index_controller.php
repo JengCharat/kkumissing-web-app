@@ -12,7 +12,7 @@ use App\Models\Booking;
 class index_controller extends Controller
 {
     //
-    public function index(Request $request){
+public function index(Request $request){
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 

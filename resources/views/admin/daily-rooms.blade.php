@@ -158,6 +158,14 @@
                                     @endif
                                 @endforeach
                             @endforeach
+                            {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
+                            {{--     @foreach ($room as $item) --}}
+                            {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
+                            {{--                 class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white"> --}}
+                            {{--             {{ $item->roomNumber }} --}}
+                            {{--         </button> --}}
+                            {{--     @endforeach --}}
+                            {{-- @endforeach --}}
                         </div>
                     </div>
 
