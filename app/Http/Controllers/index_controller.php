@@ -118,9 +118,11 @@ public function index(Request $request){
         $contract->contract_date = today();
         $contract->save();
         $contract_id = $contract->contractID;
-        $request->validate([
-            'img' => 'required|image|mimes:jpeg,png,jpg,gif',
-        ]);
+
+        // $request->validate([
+        //     'img' => 'required|image|mimes:jpeg,png,jpg,gif',
+        // ]);
+
         $file = $request->file('img');
 
         $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
@@ -129,7 +131,6 @@ public function index(Request $request){
 
         $contract->contract_file = $path;
         $contract->save();
-
 
         $booking = new Booking();
         $booking->tenant_id = $tenant->tenantID;
@@ -140,6 +141,7 @@ public function index(Request $request){
         $booking->due_date = $request->due_date;
         $booking->deposit = $request->deposit;
         $booking->save();
+
 
         // Check if the user is an admin and redirect accordingly
         if (auth()->check() && auth()->user()->usertype === 'admin') {

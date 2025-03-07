@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;  // เพิ่มบรรทัดนี้เพื่อใช้ Carbon
 class AdminController extends Controller
 {
     /**
@@ -53,6 +55,34 @@ class AdminController extends Controller
 
         $check_in = $request->check_in;
         $check_out = $request->check_out;
+
+        $bills = Bill::all();
+        $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+        // $month_price = DB::table('contracts')
+        // ->join('bills', 'contracts.tenant_id', '=', 'bills.tenantID')
+        // ->whereBetween('bills.BillDate', ['2025-01-01', '2025-12-31'])
+        // ->select('contracts.*', 'bills.BillDate', 'bills.total_price')
+        // ->get();
+        $month_price = Bill::all();
+
+
+            $monthly_totals = [];
+            $month_date = [];
+
+            // สร้าง loop เพื่อรวมยอดตามเดือน
+            foreach ($month_price as $item) {
+                $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+                $month_date[] = $month;
+
+                if (!isset($monthly_totals[$month])) {
+                    $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+                }
+
+                // บวกยอดราคาในเดือนนั้น
+                $monthly_totals[$month] += $item->total_price;
+            }
+            $month_date = array_unique($month_date);
 
         // Get all bookings if date filter is applied
         $bookings = null;
@@ -92,7 +122,7 @@ class AdminController extends Controller
         // echo($bookings);
         // echo("</h1>");
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken','monthly_totals','month_date'));
     }
 
     /**
@@ -468,7 +498,6 @@ class AdminController extends Controller
 
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
-
         return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings'));
     }
 
