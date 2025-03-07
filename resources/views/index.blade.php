@@ -57,7 +57,7 @@
                                 <input type="date" name="check_out" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                             </div>
                             <div class="flex items-end">
-                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">กรอง</button>
+                                <button onclick = "change_date()" type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">กรอง</button>
                                 @if(isset($check_in) || isset($check_out))
                                     <a href="{{ route('index') }}" class="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">ล้าง</a>
                                 @endif
@@ -251,12 +251,12 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คอิน</label>
-                                <input type="date" name="checkin" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input disabled  value  = "{{$check_in}}" type="date" id = "checkin" name="checkin" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คเอาท์</label>
-                                <input type="date" name="checkout" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input disabled value = "{{$check_out}}" type="date" id = "checkout" name="checkout" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                             </div>
 
                             <div>
