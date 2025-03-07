@@ -16,8 +16,9 @@ public function index(Request $request){
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-       $check_in = $request->check_in;
-        $check_out = $request->check_out;
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
 
         // Get all bookings if date filter is applied
         $bookings = null;
@@ -26,7 +27,6 @@ public function index(Request $request){
                 ->whereDate('end_date', '>=', $check_in)
                 ->get()
                 ->groupBy('room_id');
-
         }
 
         if($bookings && $bookings->isNotEmpty()){
@@ -55,9 +55,22 @@ public function index(Request $request){
     public function hire(Request $request){
         $roomNumber = $request->roomNumber;
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
+
+        // Check if room is available
         if($room->status == "Not Available"){
             abort(404);
         }
+
+        // Check if there are any existing bookings for this room in the specified date range
+        $existingBookings = Contract::where('room_id', $room->roomID)
+            ->whereDate('start_date', '<=', $request->checkout)
+            ->whereDate('end_date', '>=', $request->checkin)
+            ->exists();
+
+        if ($existingBookings) {
+            return redirect()->back()->with('error', 'ห้องนี้ถูกจองในช่วงเวลาที่เลือกแล้ว กรุณาเลือกห้องหรือวันที่อื่น');
+        }
+
         $room->update([
             'status' => "Not Available",
         ]);
@@ -142,7 +155,7 @@ public function index(Request $request){
         $booking->save();
 
         // Check if the user is an admin and redirect accordingly
-        if (auth()->check() && auth()->user()->usertype === 'admin') {
+        if (auth()->check() && auth()->user() && auth()->user()->usertype === 'admin') {
             return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
         }
 

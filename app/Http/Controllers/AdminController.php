@@ -51,8 +51,9 @@ class AdminController extends Controller
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        $check_in = $request->check_in;
-        $check_out = $request->check_out;
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
 
         // Get all bookings if date filter is applied
         $bookings = null;
@@ -67,8 +68,6 @@ class AdminController extends Controller
                 ->get()
                 ->groupBy('room_id');
 
-
-
             $bookings_month = Contract::whereDate('start_date', '<=', $check_out)
                 ->whereDate('end_date', '>=', $check_in)
                 ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
@@ -78,21 +77,22 @@ class AdminController extends Controller
                 ->get()
                 ->groupBy('room_id');
         }
+
         if($bookings && $bookings->isNotEmpty()){
             $daily_room_id_that_has_been_taken = $bookings;
-            $monthly_room_id_that_has_been_taken = $bookings_month;
         }
         else{
             $daily_room_id_that_has_been_taken = [];
+        }
+
+        if($bookings_month && $bookings_month->isNotEmpty()){
+            $monthly_room_id_that_has_been_taken = $bookings_month;
+        }
+        else{
             $monthly_room_id_that_has_been_taken = [];
         }
-        // echo ("<h1>");
-        // echo("xxxxxxxxxxxx");
-        // echo($daily_room_id_that_has_been_taken[0]);
-        // echo($bookings);
-        // echo("</h1>");
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
     }
 
     /**
@@ -227,10 +227,16 @@ class AdminController extends Controller
             'roomNumber' => 'required|string',
             'tenantName' => 'required|string',
             'tenantTel' => 'required|string',
-            'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
+            'check_in' => 'required_without:checkin|date',
+            'check_out' => 'required_without:checkout|date|after:check_in',
+            'checkin' => 'required_without:check_in|date',
+            'checkout' => 'required_without:check_out|date|after:checkin',
             'deposit' => 'required|numeric',
         ]);
+
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
 
         // Get room by room number
         $room = Room::where('roomNumber', $request->roomNumber)->firstOrFail();
@@ -253,9 +259,9 @@ class AdminController extends Controller
         $tenant->save();
 
         // Calculate number of days and total price
-        $checkIn = new \DateTime($request->check_in);
-        $checkOut = new \DateTime($request->check_out);
-        $interval = $checkIn->diff($checkOut);
+        $checkInDate = new \DateTime($check_in);
+        $checkOutDate = new \DateTime($check_out);
+        $interval = $checkInDate->diff($checkOutDate);
         $days = $interval->days;
 
         // Use daily rate from room if available, otherwise use a default
@@ -267,8 +273,8 @@ class AdminController extends Controller
         $booking->tenant_id = $tenant->tenantID;
         $booking->room_id = $room->roomID;
         $booking->booking_type = 'daily';
-        $booking->check_in = $request->check_in;
-        $booking->check_out = $request->check_out;
+        $booking->check_in = $check_in;
+        $booking->check_out = $check_out;
         $booking->deposit = $request->deposit;
         $booking->save();
 
@@ -284,9 +290,15 @@ class AdminController extends Controller
             'tenantID' => 'required|exists:tenants,tenantID',
             'tenantName' => 'required|string',
             'tenantTel' => 'required|string',
-            'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
+            'check_in' => 'required_without:checkin|date',
+            'check_out' => 'required_without:checkout|date|after:check_in',
+            'checkin' => 'required_without:check_in|date',
+            'checkout' => 'required_without:check_out|date|after:checkin',
         ]);
+
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
 
         // Update tenant
         $tenant = Tenant::find($request->tenantID);
@@ -297,8 +309,8 @@ class AdminController extends Controller
         // Update booking
         $booking = Booking::where('tenant_id', $tenant->tenantID)->first();
         if ($booking) {
-            $booking->check_in = $request->check_in;
-            $booking->check_out = $request->check_out;
+            $booking->check_in = $check_in;
+            $booking->check_out = $check_out;
             $booking->save();
         }
 
