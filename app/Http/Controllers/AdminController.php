@@ -271,62 +271,95 @@ class AdminController extends Controller
      */
     public function createDailyTenant(Request $request)
     {
-        $request->validate([
-            'roomNumber' => 'required|string',
-            'tenantName' => 'required|string',
-            'tenantTel' => 'required|string',
-            'check_in' => 'required_without:checkin|date',
-            'check_out' => 'required_without:checkout|date|after:check_in',
-            'checkin' => 'required_without:check_in|date',
-            'checkout' => 'required_without:check_out|date|after:checkin',
-            'deposit' => 'required|numeric',
-        ]);
+        try {
+            $request->validate([
+                'roomNumber' => 'required|string',
+                'tenantName' => 'required|string',
+                'tenantTel' => 'required|string',
+                'check_in' => 'required_without:checkin|date',
+                'check_out' => 'required_without:checkout|date|after:check_in',
+                'checkin' => 'required_without:check_in|date',
+                'checkout' => 'required_without:check_out|date|after:checkin',
+                'deposit' => 'required|numeric',
+            ]);
 
-        // Get check-in and check-out dates from request, supporting both naming conventions
-        $check_in = $request->checkin ?? $request->check_in;
-        $check_out = $request->checkout ?? $request->check_out;
+            // Get check-in and check-out dates from request, supporting both naming conventions
+            $check_in = $request->checkin ?? $request->check_in;
+            $check_out = $request->checkout ?? $request->check_out;
 
-        // Get room by room number
-        $room = Room::where('roomNumber', $request->roomNumber)->firstOrFail();
+            // Get room by room number
+            $room = Room::where('roomNumber', $request->roomNumber)->firstOrFail();
 
-        // Check if room is available
-        if ($room->status != "Available") {
-            return redirect()->back()->with('error', 'ห้องไม่ว่าง');
+            // Check if room is available
+            if ($room->status != "Available") {
+                return redirect()->back()->with('error', 'ห้องไม่ว่าง');
+            }
+
+            // Update room status to Not Available
+            $room->update([
+                'status' => "Not Available",
+            ]);
+
+            // Create new tenant
+            $tenant = new Tenant();
+            $tenant->tenantName = $request->tenantName;
+            $tenant->tenant_type = 'daily';
+            $tenant->telNumber = $request->tenantTel;
+
+            // For daily tenants, use the room's user
+            $users = User::where('name', $request->roomNumber)->first();
+            if (!$users) {
+                return redirect()->back()->with('error', 'ไม่พบผู้ใช้สำหรับห้องนี้');
+            }
+            $tenant->user_id_tenant = $users->id;
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
+
+            $tenant->save();
+
+            // Calculate number of days and total price
+            $checkInDate = new \DateTime($check_in);
+            $checkOutDate = new \DateTime($check_out);
+            $interval = $checkInDate->diff($checkOutDate);
+            $days = $interval->days;
+
+            // Use daily rate from room if available, otherwise use a default
+            $dailyRate = $room->daily_rate ?? 600; // Default daily rate if not set
+            $totalPrice = $days * $dailyRate;
+
+            // Create contract for daily tenant
+            $contract = new Contract();
+            $contract->start_date = $check_in;
+            $contract->end_date = $check_out;
+            $contract->room_id = $room->roomID;
+            $contract->tenant_id = $tenant->tenantID;
+            $contract->contract_date = today();
+            $contract->save();
+
+            // Create booking with proper field mapping
+            $booking = new Booking();
+            $booking->tenant_id = $tenant->tenantID;
+            $booking->room_id = $room->roomID;
+            $booking->booking_type = 'daily';
+
+            // Ensure check_in and check_out are properly set
+            $booking->check_in = $check_in;
+            $booking->check_out = $check_out;
+            $booking->deposit = $request->deposit;
+            $booking->save();
+
+            // Update meter reading with tenant
+            $meter_reading = MeterReading::where('room_id', $room->roomID)->first();
+            if ($meter_reading) {
+                $meter_reading->tenant_id = $tenant->tenantID;
+                $meter_reading->save();
+            }
+
+            return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Daily tenant creation error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
         }
-
-        // Update room status to Not Available
-        $room->update([
-            'status' => "Not Available",
-        ]);
-
-        // Create new tenant
-        $tenant = new Tenant();
-        $tenant->tenantName = $request->tenantName;
-        $tenant->tenant_type = 'daily';
-        $tenant->telNumber = $request->tenantTel;
-        $tenant->save();
-
-        // Calculate number of days and total price
-        $checkInDate = new \DateTime($check_in);
-        $checkOutDate = new \DateTime($check_out);
-        $interval = $checkInDate->diff($checkOutDate);
-        $days = $interval->days;
-
-        // Use daily rate from room if available, otherwise use a default
-        $dailyRate = $room->daily_rate ?? 600; // Default daily rate if not set
-        $totalPrice = $days * $dailyRate;
-
-        // Create booking
-        $booking = new Booking();
-        $booking->tenant_id = $tenant->tenantID;
-        $booking->room_id = $room->roomID;
-        $booking->booking_type = 'daily';
-        $booking->check_in = $check_in;
-        $booking->check_out = $check_out;
-        $booking->deposit = $request->deposit;
-        $booking->save();
-
-        return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
     }
 
     /**
@@ -360,6 +393,14 @@ class AdminController extends Controller
             $booking->check_in = $check_in;
             $booking->check_out = $check_out;
             $booking->save();
+        }
+
+        // Also update the contract dates to match
+        $contract = Contract::where('tenant_id', $tenant->tenantID)->first();
+        if ($contract) {
+            $contract->start_date = $check_in;
+            $contract->end_date = $check_out;
+            $contract->save();
         }
 
         return redirect()->route('admin.daily-tenants')->with('success', 'อัพเดทข้อมูลการจองเรียบร้อยแล้ว');
@@ -412,15 +453,13 @@ class AdminController extends Controller
      */
     public function getDailyTenantDetails($tenantId)
     {
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::with('bookings')->find($tenantId);
         if (!$tenant) {
             return response()->json(['error' => 'Tenant not found'], 404);
         }
 
-        // Get booking for this tenant
-        $booking = Booking::where('tenant_id', $tenantId)
-            ->orderBy('created_at', 'desc')
-            ->first();
+        // Get the most recent booking for this tenant
+        $booking = $tenant->bookings->sortByDesc('created_at')->first();
 
         // Get room from booking
         $room = null;

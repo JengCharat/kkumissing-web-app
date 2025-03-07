@@ -85,6 +85,7 @@ function showTenantDetails(tenantId) {
             }
 
             const tenant = data.tenant;
+            // The booking will be the first one from the collection
             const booking = data.booking;
             const room = data.room;
             const days = data.days;
