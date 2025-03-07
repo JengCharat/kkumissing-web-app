@@ -58,7 +58,7 @@
                                     @foreach($tenants as $tenant)
                                         <tr data-tenant-id="{{ $tenant->tenantID }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->room ? $tenant->bookings->room->roomNumber : 'ไม่ระบุ' }}
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room ? $tenant->bookings->first()->room->roomNumber : 'ไม่ระบุ' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                                 {{ $tenant->tenantName }}
@@ -67,13 +67,13 @@
                                                 {{ $tenant->telNumber }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->check_in ? date('d/m/Y', strtotime($tenant->bookings->check_in)) : 'ไม่ระบุ' }}
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->check_in ? date('d/m/Y', strtotime($tenant->bookings->first()->check_in)) : 'ไม่ระบุ' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->room ? $tenant->bookings->room->month_rate ?? 'ไม่ระบุ' : 'ไม่ระบุ' }} บาท
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room ? $tenant->bookings->first()->room->month_rate ?? 'ไม่ระบุ' : 'ไม่ระบุ' }} บาท
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                @if($tenant->bookings && $tenant->bookings->room)
+                                                @if($tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room)
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                         อยู่ระหว่างเช่า
                                                     </span>
@@ -409,7 +409,7 @@
                     // Set contract file
                     const contractFileImage = document.getElementById('contract_file_image');
                     const noContractFile = document.getElementById('no_contract_file');
-                    
+
                     if (contract && contract.contract_file) {
                         // The contract_file path is already relative to storage
                         contractFileImage.src = `/storage/${contract.contract_file}`;
@@ -448,7 +448,7 @@
             const formData = new FormData();
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
             formData.append('_method', 'DELETE');
-            
+
             // Send delete request to the server using POST method with _method=DELETE
             fetch(`/admin/delete-monthly-tenant/${tenantId}`, {
                 method: 'POST',

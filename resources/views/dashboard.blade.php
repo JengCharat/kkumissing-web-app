@@ -53,7 +53,7 @@
                                     file:rounded-full file:border-0
                                     file:text-sm file:font-semibold
                                     file:bg-blue-50 file:text-blue-700
-                                    hover:file:bg-blue-100">
+                                    hover:file:bg-blue-100" required>
                                 <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">ชำระเงิน</button>
                                 <br>
                                 @if(session('status'))

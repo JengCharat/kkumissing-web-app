@@ -59,7 +59,8 @@
                                 @if(count($tenants) > 0)
                                     @foreach($tenants as $tenant)
                                         @php
-                                            $booking = $tenant->bookings;
+                                            // Get the first booking for this tenant
+                                            $booking = $tenant->bookings->first();
                                             $room = $booking ? $booking->room : null;
 
                                             // Calculate days and total price

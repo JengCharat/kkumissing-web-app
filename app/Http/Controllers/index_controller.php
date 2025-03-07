@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Room;
 use App\Models\MeterReading;
+use App\Models\MeterDetails;
 use App\Models\Tenant;
 use App\Models\Contract;
 use App\Models\User;
@@ -58,7 +59,7 @@ public function index(Request $request){
 
         // Check if room is available
         if($room->status == "Not Available"){
-            abort(404);
+            return redirect()->back()->with('error', 'ห้องไม่ว่าง กรุณาเลือกห้องอื่น');
         }
 
         // Check if there are any existing bookings for this room in the specified date range
@@ -103,7 +104,22 @@ public function index(Request $request){
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
 
-        $meter_reading = MeterReading::where('room_id',$room->roomID)->firstOrFail();
+        $meter_reading = MeterReading::where('room_id', $room->roomID)->first();
+
+        if (!$meter_reading) {
+            // Create a new meter reading record if one doesn't exist
+            $meter_details = MeterDetails::create([
+                'water_meter_start' => 0,
+                'electricity_meter_start' => 0,
+            ]);
+
+            $meter_reading = new MeterReading();
+            $meter_reading->room_id = $room->roomID;
+            $meter_reading->meter_details_id = $meter_details->meter_detailID;
+            $meter_reading->save();
+        }
+
+        // Now update the tenant_id
         $meter_reading->tenant_id = $tenant->tenantID;
         $meter_reading->save();
         // if ($meter_reading) {
@@ -144,22 +160,39 @@ public function index(Request $request){
         $contract->save();
 
 
+        // Create booking with proper field mapping
         $booking = new Booking();
         $booking->tenant_id = $tenant->tenantID;
         $booking->room_id = $room->roomID;
         $booking->booking_type = $request->tenant_type;
-        $booking->check_in = $request->checkin;
-        $booking->check_out = $request->checkout;
-        $booking->due_date = $request->due_date;
-        $booking->deposit = $request->deposit;
+
+        // Ensure check_in and check_out are properly set from checkin and checkout
+        $booking->check_in = $request->checkin ?? $request->check_in;
+        $booking->check_out = $request->checkout ?? $request->check_out;
+
+        // Set default values for optional fields
+        $booking->due_date = $request->due_date ?? null;
+        $booking->deposit = $request->deposit ?? 0;
+
+        // Debug information
+        \Illuminate\Support\Facades\Log::info('Booking data:', [
+            'tenant_id' => $tenant->tenantID,
+            'room_id' => $room->roomID,
+            'booking_type' => $request->tenant_type,
+            'check_in' => $booking->check_in,
+            'check_out' => $booking->check_out,
+            'due_date' => $booking->due_date,
+            'deposit' => $booking->deposit
+        ]);
+
         $booking->save();
 
         // Check if the user is an admin and redirect accordingly
-        if (auth()->check() && auth()->user() && auth()->user()->usertype === 'admin') {
+        if (auth()->check() && auth()->user()->usertype === 'admin') {
             return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
         }
 
-        return redirect('/');
+        return redirect('/')->with('success', 'จองห้องพักเรียบร้อยแล้ว');
     }
     public function showImage($contractID)
 {
