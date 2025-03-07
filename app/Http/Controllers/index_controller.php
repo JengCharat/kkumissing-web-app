@@ -28,6 +28,7 @@ public function index(Request $request){
                 ->whereDate('end_date', '>=', $check_in)
                 ->get()
                 ->groupBy('room_id');
+
         }
 
         if($bookings && $bookings->isNotEmpty()){
