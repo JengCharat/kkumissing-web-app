@@ -117,7 +117,7 @@ class AdminController extends Controller
             $monthly_room_id_that_has_been_taken = [];
         }
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out', 'monthly_totals', 'month_date'));
     }
 
     /**
