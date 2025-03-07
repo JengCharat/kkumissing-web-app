@@ -273,6 +273,11 @@
                                 <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
                             </div> --}}
 
+                            {{-- <div>
+                                <x-label for="deposit" value="เงินมัดจำ" />
+                                <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
+                            </div> --}}
+
                             <div>
                                 <x-label value="การชำระเงิน" />
                                 <div class="flex space-x-2 mt-1">
