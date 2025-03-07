@@ -12,23 +12,31 @@ use App\Models\Booking;
 class index_controller extends Controller
 {
     //
-    public function index(Request $request){
+public function index(Request $request){
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        $check_in = $request->check_in;
+       $check_in = $request->check_in;
         $check_out = $request->check_out;
 
         // Get all bookings if date filter is applied
         $bookings = null;
         if ($check_in && $check_out) {
-            $bookings = Booking::whereDate('check_in', '<=', $check_out)
-                ->whereDate('check_out', '>=', $check_in)
+            $bookings = Contract::whereDate('start_date', '<=', $check_out)
+                ->whereDate('end_date', '>=', $check_in)
                 ->get()
                 ->groupBy('room_id');
+
         }
 
-        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out'));
+        if($bookings && $bookings->isNotEmpty()){
+            $room_id_that_has_been_taken = $bookings->keys()->toArray();
+        }
+        else{
+            $room_id_that_has_been_taken = [];
+        }
+
+        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out','room_id_that_has_been_taken'));
     }
 
     public function getRoomBookings($roomId) {
