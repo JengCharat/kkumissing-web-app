@@ -55,9 +55,9 @@ public function index(Request $request){
     public function hire(Request $request){
         $roomNumber = $request->roomNumber;
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
-        if($room->status == "Not Available"){
-            abort(404);
-        }
+        // if($room->status == "Not Available"){
+        //     abort(404);
+        // }
         $room->update([
             'status' => "Not Available",
         ]);
