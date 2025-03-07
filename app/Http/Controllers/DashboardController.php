@@ -112,6 +112,9 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time
             ->first();  // Get the first (most recent) record
 
+            if (!$bill) {
+                return redirect('dashboard')->with('error', 'Bill not found');
+            }
 
             $request->validate([
                 'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',
@@ -119,16 +122,17 @@ class DashboardController extends Controller
 
             $file = $request->file('slip_image');
 
-            $filename = 'slip-image-date'.'-'."xxx" .'.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
-            $path = $file->storeAs('upload', $filename, 'public');
-            // $file->store('upload', 'public');
-            $bills->status = "ชำระแล้ว";
-            $bills->slip_file = $path;
-            $bills->save();
+            // Generate a unique filename with timestamp
+            $filename = 'slip-image-' . date('Ymd-His') . '-' . $bill->BillNo . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('slips', $filename, 'public');
 
-            $status = $bills->status;
+            // Update bill status and slip file path
+            $bill->status = "ชำระแล้ว";
+            $bill->slip_file = $path;
+            $bill->save();
+
+            $status = $bill->status;
             return redirect('dashboard')->with('status', $status);
-
         }
 
         public function printReceipt($billId)
