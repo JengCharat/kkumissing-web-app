@@ -57,15 +57,14 @@ class DashboardController extends Controller
         $file = $request->file('slip_image');
 
         $filename = 'slip-image-date'.'-'."xxx" .'.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
-        $path = $file->storeAs('upload', $filename, 'public');
-        // $file->store('upload', 'public');
+        // $file->store('slips', 'public');
+        $path = $file->storeAs('slips', $filename, 'public');
         $bills->status = "ชำระแล้ว";
         $bills->slip_file = $path;
         $bills->save();
 
         $status = $bills->status;
         return redirect('dashboard')->with('status', $status);
-
     }
 
 }

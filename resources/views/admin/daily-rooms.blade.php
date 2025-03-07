@@ -88,7 +88,7 @@
 
                     <div class="mt-4">
                         <h4 class="font-medium mb-2">ข้อมูลการจอง</h4>
-                        <form method="POST" action="/hire" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('hire') }}" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
                             <input type="hidden" name="tenant_type" value="daily">
@@ -114,6 +114,11 @@
                                     <x-input id="checkout" name="checkout" type="date" class="block mt-1 w-full" required />
                                 </div>
                             </div>
+
+                            {{-- <div>
+                                <x-label for="deposit" value="เงินมัดจำ" />
+                                <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
+                            </div> --}}
 
                             <div>
                                 <x-label value="การชำระเงิน" />

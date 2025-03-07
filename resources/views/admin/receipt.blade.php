@@ -148,18 +148,18 @@
                     <td>ค่าไฟฟ้า / Electricity</td>
                     <td>{{ number_format($bill->electricity_price, 2) }}</td>
                 </tr>
-                @if($bill->damage_fee > 0)
+                {{-- @if($bill->damage_fee > 0) --}}
                 <tr>
                     <td>ค่าเสียหาย / Damage Fee</td>
                     <td>{{ number_format($bill->damage_fee, 2) }}</td>
                 </tr>
-                @endif
-                @if($bill->overdue_fee > 0)
+                {{-- @endif --}}
+                {{-- @if($bill->overdue_fee > 0) --}}
                 <tr>
                     <td>ค่าปรับล่าช้า / Overdue Fee</td>
                     <td>{{ number_format($bill->overdue_fee, 2) }}</td>
                 </tr>
-                @endif
+                {{-- @endif --}}
             </tbody>
             <tfoot>
                 <tr>
