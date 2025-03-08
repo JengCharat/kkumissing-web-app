@@ -41,10 +41,10 @@
             transition: background-color 0.2s;
         }
         .sidebar-link:hover {
-            background-color: #4a5568;
+            background-color: #15993d;
         }
         .sidebar-link.active {
-            background-color: #4299e1;
+            background-color: #098b30;
         }
         .sidebar-link svg {
             width: 20px;
@@ -94,7 +94,7 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gradient-to-r from-green-400 to-green-700 dark:from-green-700 dark:to-green-900">
+    <div class="min-h-screen bg-gray-200">
         <!-- Sidebar Navigation -->
         <div class="admin-sidebar" id="sidebar">
             <div class="sidebar-header">
