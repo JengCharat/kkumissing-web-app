@@ -1,6 +1,6 @@
-function select_this_room(id) {
+function select_this_room(roomId) {
     // Fetch the room details to get the room number
-    fetch(`/room-bookings/${id}`)
+    fetch(`/room-bookings/${roomId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -10,10 +10,11 @@ function select_this_room(id) {
         .then(data => {
             // Display the room number in the UI
             document.getElementById("room_ID_select").innerHTML = data.room.roomNumber;
+            document.getElementById("selected_room_number").textContent = data.room.roomNumber;
 
-            // Set the room number (not ID) for the booking forms
-            document.getElementById("room_ID_select_monthly").value = data.room.roomNumber;
+            // Set the room number for the booking form
             document.getElementById("room_ID_select_daily").value = data.room.roomNumber;
+            document.getElementById("room_ID_select2").value = data.room.roomNumber;
 
             // Show room details section
             document.getElementById("room_details").classList.remove("hidden");
@@ -25,7 +26,6 @@ function select_this_room(id) {
             console.error('Error fetching room details:', error);
         });
 }
-
 
 function displayBookings(bookings) {
     const bookingList = document.getElementById('booking_list');
@@ -61,31 +61,65 @@ function displayBookings(bookings) {
     });
 }
 
-function daily_form() {
-    document.getElementById("monthly_form").style.display = "none";
-    document.getElementById("daily_form").style.display = "block";
+function showBookingForm() {
+    // Get the selected room ID
+    const selectedRoomId = document.getElementById('room_ID_select2').value;
+
+    // Check if a room is selected
+    if (!selectedRoomId) {
+        alert('กรุณาเลือกห้องก่อนทำการจอง');
+        return;
+    }
+
+    // Check if the room is already booked (red or blue)
+    const roomElement = document.querySelector(`button[onclick="select_this_room('${selectedRoomId}')"]`);
+    if (roomElement && (roomElement.classList.contains('bg-red-500') || roomElement.classList.contains('bg-blue-500'))) {
+        alert('ห้องนี้ถูกจองแล้ว ไม่สามารถจองได้');
+        return;
+    }
+
+    document.getElementById('booking_form').style.display = 'block';
+
+    // Use filter dates if available, otherwise use today and tomorrow
+    const checkInInput = document.querySelector('input[name="check_in"]');
+    const checkOutInput = document.querySelector('input[name="check_out"]');
+
+    if (checkInInput && checkInInput.value) {
+        document.getElementById('checkin').value = checkInInput.value;
+    } else {
+        const today = new Date();
+        document.getElementById('checkin').value = formatDate(today);
+    }
+
+    if (checkOutInput && checkOutInput.value) {
+        document.getElementById('checkout').value = checkOutInput.value;
+    } else {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('checkout').value = formatDate(tomorrow);
+    }
 }
-function monthly_form() {
-    document.getElementById("daily_form").style.display = "none";
-    document.getElementById("monthly_form").style.display = "block";
+
+function hideBookingForm() {
+    document.getElementById('booking_form').style.display = 'none';
 }
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function show_qr() {
-    var x = document.getElementById("qr_img_monthly");
-    var y = document.getElementById("qr_img_daily");
-    if (x.style.display == "none") {
-        x.style.display = "block";
+    var qrImg = document.getElementById("qr_img");
+    if (qrImg.style.display === "none") {
+        qrImg.style.display = "block";
     } else {
-        x.style.display = "none";
-    }
-
-    if (y.style.display == "none") {
-        y.style.display = "block";
-    } else {
-        y.style.display = "none";
+        qrImg.style.display = "none";
     }
 }
 
-// Function to set minimum date for all date inputs to today
 function setMinDates() {
     // Get today's date in YYYY-MM-DD format
     const today = new Date();

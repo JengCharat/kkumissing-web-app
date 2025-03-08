@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 http://[::1]:5174
 =======
 http://[::1]:5173
@@ -11,3 +12,6 @@ http://[::1]:5174
 =======
 http://[::1]:5174
 >>>>>>> b5e521f (admin dashboard update admin-layout.)
+=======
+http://[::1]:5173
+>>>>>>> 8274186 (admin_dashboard_update: ย้าย function daily-rooms, monthly tenants ไป js file และตั้งไม่ให้เลือกวันย้อนหลังได้.)
