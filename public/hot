@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 http://[::1]:5174
 =======
 http://[::1]:5173
@@ -7,3 +8,6 @@ http://[::1]:5173
 =======
 http://[::1]:5174
 >>>>>>> 0f53854 (admin dashboard update graph shows [daily-roo, adminController] updated.)
+=======
+http://[::1]:5174
+>>>>>>> b5e521f (admin dashboard update admin-layout.)

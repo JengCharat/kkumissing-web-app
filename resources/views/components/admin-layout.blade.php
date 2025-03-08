@@ -21,7 +21,7 @@
         .admin-sidebar {
             width: 240px;
             min-height: 100vh;
-            background-color: #1a5d1a;
+            background-color: #026102;
             color: white;
             position: fixed;
             left: 0;
