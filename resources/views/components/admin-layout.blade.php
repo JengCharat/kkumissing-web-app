@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apartment Management</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
@@ -20,7 +21,7 @@
         .admin-sidebar {
             width: 240px;
             min-height: 100vh;
-            background-color: #2d3748;
+            background-color: #1a5d1a;
             color: white;
             position: fixed;
             left: 0;
@@ -93,7 +94,7 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-gradient-to-r from-green-400 to-green-700 dark:from-green-700 dark:to-green-900">
         <!-- Sidebar Navigation -->
         <div class="admin-sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -145,12 +146,12 @@
                     </svg>
                     <span>ลูกค้ารายวัน</span>
                 </a>
-                <a href="{{ route('admin.apartment-info') }}" class="sidebar-link {{ request()->routeIs('admin.apartment-info') ? 'active' : '' }}">
+                {{-- <a href="{{ route('admin.apartment-info') }}" class="sidebar-link {{ request()->routeIs('admin.apartment-info') ? 'active' : '' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>ข้อมูลหอพัก</span>
-                </a>
+                </a> --}}
                 {{-- <a href="{{ route('admin.room-types') }}" class="sidebar-link {{ request()->routeIs('admin.room-types') ? 'active' : '' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />

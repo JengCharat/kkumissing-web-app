@@ -113,11 +113,52 @@
         </div>
     </div>
 
+    <!-- Slip Image Modal -->
+    <div id="slipModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">รูปสลิปการชำระเงิน</h3>
+                <button onclick="closeSlipModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex justify-center">
+                <img id="slipImage" src="" alt="สลิปการชำระเงิน" class="max-w-full max-h-[70vh] object-contain">
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeSlipModal()" class="px-4 py-2 bg-black-300 text-white-800 rounded-md hover:bg-gray-400">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript for handling bill actions -->
     <script>
         function viewBillDetails(billId) {
-            // Redirect to bill details or show in modal
-            window.location.href = `/admin/get-bill/${billId}`;
+            // Fetch bill details and show slip in modal
+            fetch(`/admin/get-bill/${billId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.bill && data.bill.slip_file) {
+                        // Set the image source
+                        document.getElementById('slipImage').src = `/storage/${data.bill.slip_file}`;
+                        // Show the modal
+                        document.getElementById('slipModal').classList.remove('hidden');
+                    } else {
+                        alert('ไม่พบรูปสลิปการชำระเงิน');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching bill details:', error);
+                    alert('เกิดข้อผิดพลาดในการดึงข้อมูล');
+                });
+        }
+
+        function closeSlipModal() {
+            document.getElementById('slipModal').classList.add('hidden');
         }
 
         function printReceipt(billId) {

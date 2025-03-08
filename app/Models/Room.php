@@ -15,9 +15,6 @@ class Room extends Model
         'status',
         'daily_rate',
         'month_rate',
-        'water_price',
-        'electricity_price',
-        'overdue_fee_rate',
     ];
 
     protected $primaryKey = 'roomID';

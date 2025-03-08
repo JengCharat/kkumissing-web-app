@@ -17,8 +17,6 @@ class Booking extends Model
         'check_in',
         'check_out',
         'deposit',
-        'damage_fee',
-        'overdue_fee',
         'due_date',
     ];
 
@@ -33,10 +31,4 @@ class Booking extends Model
     {
         return $this->belongsTo(Room::class, 'room_id', 'roomID');
     }
-
-    // If Booking is related to Expense (based on ERD and 'record' relationship)
-    // public function expenses()
-    // {
-    //     return $this->belongsToMany(Expense::class); // Assuming many-to-many relationship via 'record' in ERD
-    // }
 }

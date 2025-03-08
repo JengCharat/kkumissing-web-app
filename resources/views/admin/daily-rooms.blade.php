@@ -1,4 +1,5 @@
 <x-admin-layout>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('เช่าห้องรายวัน') }}
@@ -43,20 +44,18 @@
                         <h4 class="text-md font-medium mb-2">รายละเอียดห้อง</h4>
                         <p class="mb-2">ประเภท: ห้องแอร์พร้อมเตียง ตู้เย็น และห้องน้ำ</p>
 
-                        <div id="booking_schedule" class="mt-4">
+                        {{-- <div id="booking_schedule" class="mt-4">
                             <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
                             <div id="booking_list" class="space-y-2">
                                 <!-- Booking entries will be populated here -->
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
 
 
 
 
-
-
-                        <form action="{{ route('admin.daily-rooms') }}" method="GET" class="flex flex-wrap gap-4">
+                    <form action="{{ route('admin.daily-rooms') }}" method="GET" class="flex flex-wrap gap-4">
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คอิน</label>
                                 <input type="date" name="check_in" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
@@ -68,15 +67,10 @@
                             <div class="flex items-end">
                                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">กรอง</button>
                                 @if(isset($check_in) || isset($check_out))
-                                    <a href="{{ route('index') }}" class="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">ล้าง</a>
+                                    <a href="{{ route('admin.daily-rooms') }}" class="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">ล้าง</a>
                                 @endif
                             </div>
                         </form>
-
-
-
-
-
 
                     <div class="mb-8">
                         <h4 class="text-md font-medium mb-2">Left Rooms</h4>
@@ -107,35 +101,10 @@
                                             // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
                                             $room_hasbeen_taken_id_array = [];
                                         }
-                                        $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
-                                    @endphp
 
-                                    @if (!$isBooked)
-                                        <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="p-2 text-center rounded bg-green-500 hover:bg-green-600">
-                                        {{ $item->roomNumber }}
-                                    </button>
-                                    @else
-                                        <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
-                                        <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
-                                            {{ $item->roomNumber }}
-                                            <br>
-                                            tenant name
-                                            <br>
-                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
-                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
-                                            {{-- option nal ป้องกันค่าเป็น null ถ้าไม่มีก็เป็น null --}}
-                                            {{-- $daily_room_id_that_has_been_taken → เป็น Collection ที่ได้จาก groupBy('room_id') --}}
-                                            {{-- [$item->roomID] → ดึงข้อมูลของห้องที่มี roomID เท่ากับ $item->roomID --}}
-                                            {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
-                                        </button>
-                                    @endif
-
-                                    @php
-                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ monthly_room_id_that_has_been_taken
                                         try {
-                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            // ตรวจสอบว่า $monthly_room_id_that_has_been_taken เป็น Collection หรือไม่
                                             if (is_a($monthly_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
                                                 $monthly_room_hasbeen_taken_id_array = $monthly_room_id_that_has_been_taken->keys()->toArray();
                                             } else {
@@ -144,12 +113,31 @@
                                             }
                                         } catch (Exception $e) {
                                             // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
-                                            $montlyroom_hasbeen_taken_id_array = [];
+                                            $monthly_room_hasbeen_taken_id_array = [];
                                         }
-                                            $ismonthlyBooked = in_array($item->roomID, $monthly_room_hasbeen_taken_id_array);
+
+                                        $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
+                                        $isMonthlyBooked = in_array($item->roomID, $monthly_room_hasbeen_taken_id_array);
                                     @endphp
 
-                                    @if ($ismonthlyBooked)
+                                    @if (!$isBooked && !$isMonthlyBooked)
+                                        <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
+                                        <button onclick="select_this_room('{{ $item->roomID }}')"
+                                                class="p-2 text-center rounded bg-green-500 hover:bg-green-600">
+                                            {{ $item->roomNumber }}
+                                        </button>
+                                    @elseif ($isBooked)
+                                        <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
+                                        <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
+                                            {{ $item->roomNumber }}
+                                            <br>
+                                            tenant name
+                                            <br>
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
+                                            ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
+                                        </button>
+                                    @elseif ($isMonthlyBooked)
+                                        <!-- ปุ่มสำหรับห้องที่ถูกจองรายเดือน -->
                                         <button onclick="select_this_room('{{ $item->roomID }}')"
                                                 class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
                                             {{ $item->roomNumber }}
@@ -158,13 +146,7 @@
                                     @endif
                                 @endforeach
                             @endforeach
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h4 class="text-md font-medium mb-2">Right Rooms</h4>
-                        <div class="grid grid-cols-6 gap-2">
-                            {{-- @foreach ($Rrooms->chunk(6) as $room) --}}
+                            {{-- @foreach ($Lrooms->chunk(6) as $room) --}}
                             {{--     @foreach ($room as $item) --}}
                             {{--         <button onclick="select_this_room('{{ $item->roomID }}')" --}}
                             {{--                 class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white"> --}}
@@ -172,49 +154,81 @@
                             {{--         </button> --}}
                             {{--     @endforeach --}}
                             {{-- @endforeach --}}
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-md font-medium mb-2">Right Rooms</h4>
+                        <div class="grid grid-cols-6 gap-2">
                             @foreach ($Rrooms->chunk(6) as $room)
                                 @foreach ($room as $item)
                                     @php
-                                            try {
-                                                // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
-                                                if (is_a($daily_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
-                                                    $room_hasbeen_taken_id_array = $daily_room_id_that_has_been_taken->keys()->toArray();
-                                                } else {
-                                                    // ถ้าเป็น array ก็ให้เป็น array ว่าง
-                                                    $room_hasbeen_taken_id_array = [];
-                                                }
-                                            } catch (Exception $e) {
-                                                // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        try {
+                                            // ตรวจสอบว่า $daily_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($daily_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $room_hasbeen_taken_id_array = $daily_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
                                                 $room_hasbeen_taken_id_array = [];
                                             }
-                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $room_hasbeen_taken_id_array = [];
+                                        }
+
+                                        // ตรวจสอบว่า roomID นี้อยู่ใน list ของ monthly_room_id_that_has_been_taken
+                                        try {
+                                            // ตรวจสอบว่า $monthly_room_id_that_has_been_taken เป็น Collection หรือไม่
+                                            if (is_a($monthly_room_id_that_has_been_taken, 'Illuminate\Support\Collection')) {
+                                                $monthly_room_hasbeen_taken_id_array = $monthly_room_id_that_has_been_taken->keys()->toArray();
+                                            } else {
+                                                // ถ้าเป็น array ก็ให้เป็น array ว่าง
+                                                $monthly_room_hasbeen_taken_id_array = [];
+                                            }
+                                        } catch (Exception $e) {
+                                            // ถ้ามีข้อผิดพลาดเกิดขึ้น ให้ใช้ array ว่าง
+                                            $monthly_room_hasbeen_taken_id_array = [];
+                                        }
+
                                         $isBooked = in_array($item->roomID, $room_hasbeen_taken_id_array);
+                                        $isMonthlyBooked = in_array($item->roomID, $monthly_room_hasbeen_taken_id_array);
                                     @endphp
 
-                                    @if (!$isBooked)
+                                    @if (!$isBooked && !$isMonthlyBooked)
                                         <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
-                                    <button onclick="select_this_room('{{ $item->roomID }}')"
-                                            class="p-2 text-center rounded bg-green-500 hover:bg-green-600">
-                                        {{ $item->roomNumber }}
-                                    </button>
-                                    @else
+                                        <button onclick="select_this_room('{{ $item->roomID }}')"
+                                                class="p-2 text-center rounded bg-green-500 hover:bg-green-600">
+                                            {{ $item->roomNumber }}
+                                        </button>
+                                    @elseif ($isBooked)
                                         <!-- ปุ่มสำหรับห้องที่ถูกจองหรือไม่ว่าง -->
                                         <button onclick="select_this_room('{{ $item->roomID }}')" class="p-2 text-center rounded bg-red-500 hover:bg-red-600">
                                             {{ $item->roomNumber }}
-
                                             <br>
                                             tenant name
                                             <br>
                                             ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->tenantName }})
                                             ({{ optional($daily_room_id_that_has_been_taken[$item->roomID]->first())->telNumber }})
-                                            {{-- option nal ป้องกันค่าเป็น null ถ้าไม่มีก็เป็น null --}}
-                                            {{-- $daily_room_id_that_has_been_taken → เป็น Collection ที่ได้จาก groupBy('room_id') --}}
-                                            {{-- [$item->roomID] → ดึงข้อมูลของห้องที่มี roomID เท่ากับ $item->roomID --}}
-                                            {{-- ผลลัพธ์: จะได้ Collection ย่อยที่เก็บข้อมูลสัญญาของห้องนั้น --}}
+                                        </button>
+                                    @elseif ($isMonthlyBooked)
+                                        <!-- ปุ่มสำหรับห้องที่ถูกจองรายเดือน -->
+                                        <button onclick="select_this_room('{{ $item->roomID }}')"
+                                                class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
+                                            {{ $item->roomNumber }}
+                                            <h1>this is monthly room</h1>
                                         </button>
                                     @endif
                                 @endforeach
                             @endforeach
+                            {{-- @foreach ($Rrooms->chunk(6) as $room)
+                                @foreach ($room as $item)
+                                    <button onclick="select_this_room('{{ $item->roomID }}')"
+                                            class="p-2 text-center rounded {{ $item->status == 'Available' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600' }} text-white">
+                                        {{ $item->roomNumber }}
+                                    </button>
+                                @endforeach
+                            @endforeach --}}
                         </div>
                     </div>
                 </div>
@@ -227,7 +241,7 @@
 
                     <div class="mt-4">
                         <h4 class="font-medium mb-2">ข้อมูลการจอง</h4>
-                        <form method="POST" action="/hire" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('hire') }}" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
                             <input type="hidden" name="tenant_type" value="daily">
@@ -244,15 +258,20 @@
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <x-label for="checkin" value="วันที่เข้าพัก" />
-                                    <x-input id="checkin" name="checkin" type="date" class="block mt-1 w-full" required />
-                                </div>
-                                <div>
-                                    <x-label for="checkout" value="วันที่ออก" />
-                                    <x-input id="checkout" name="checkout" type="date" class="block mt-1 w-full" required />
-                                </div>
+                            <div>
+                                <x-label for="checkin" value="วันที่เข้าพัก" />
+                                <x-input id="checkin" name="checkin" type="date" class="block mt-1 w-full" required />
                             </div>
+                            <div>
+                                <x-label for="checkout" value="วันที่ออก" />
+                                <x-input id="checkout" name="checkout" type="date" class="block mt-1 w-full" required />
+                            </div>
+                            </div>
+
+                            {{-- <div>
+                                <x-label for="deposit" value="เงินมัดจำ" />
+                                <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
+                            </div> --}}
 
                             <div>
                                 <x-label value="การชำระเงิน" />
@@ -265,7 +284,7 @@
 
                             <div>
                                 <x-label for="img" value="อัพโหลดสลิป" />
-                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1" required>
+                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1">
                             </div>
 
                             <div class="flex justify-end mt-4">
@@ -346,15 +365,42 @@
                 }
 
                 function showBookingForm() {
+                    // Get the selected room ID
+                    const selectedRoomId = document.getElementById('room_ID_select2').value;
+
+                    // Check if a room is selected
+                    if (!selectedRoomId) {
+                        alert('กรุณาเลือกห้องก่อนทำการจอง');
+                        return;
+                    }
+
+                    // Check if the room is already booked (red or blue)
+                    const roomElement = document.querySelector(`button[onclick="select_this_room('${selectedRoomId}')"]`);
+                    if (roomElement && (roomElement.classList.contains('bg-red-500') || roomElement.classList.contains('bg-blue-500'))) {
+                        alert('ห้องนี้ถูกจองแล้ว ไม่สามารถจองได้');
+                        return;
+                    }
+
                     document.getElementById('booking_form').style.display = 'block';
 
-                    // Set default dates (today and tomorrow)
-                    const today = new Date();
-                    const tomorrow = new Date();
-                    tomorrow.setDate(today.getDate() + 1);
+                    // Use filter dates if available, otherwise use today and tomorrow
+                    const checkInInput = document.querySelector('input[name="check_in"]');
+                    const checkOutInput = document.querySelector('input[name="check_out"]');
 
-                    document.getElementById('checkin').value = formatDate(today);
-                    document.getElementById('checkout').value = formatDate(tomorrow);
+                    if (checkInInput && checkInInput.value) {
+                        document.getElementById('checkin').value = checkInInput.value;
+                    } else {
+                        const today = new Date();
+                        document.getElementById('checkin').value = formatDate(today);
+                    }
+
+                    if (checkOutInput && checkOutInput.value) {
+                        document.getElementById('checkout').value = checkOutInput.value;
+                    } else {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        document.getElementById('checkout').value = formatDate(tomorrow);
+                    }
                 }
 
                 function hideBookingForm() {

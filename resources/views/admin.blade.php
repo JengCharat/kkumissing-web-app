@@ -7,9 +7,77 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Info Boxes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Current Tenants Box -->
+                <div class="bg-green-500 text-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-2">ผู้เช่าปัจจุบัน</h3>
+                        <p class="text-3xl font-bold">{{ \App\Models\Tenant::count() }} ห้อง</p>
+                        <p class="text-xl font-bold">รายเดือน {{ \App\Models\Tenant::where('tenant_type', 'monthly')->count() }} ห้อง</p>
+                        <p class="text-xl font-bold">รายวัน {{ \App\Models\Tenant::where('tenant_type', 'daily')->count() }} ห้อง</p>
+                        <div class="grid grid-cols-4 gap-1 mt-4">
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.monthly-tenants') }}" class="block bg-green-600 hover:bg-green-700 text-center py-2 text-white transition duration-200">
+                        More info
+                    </a>
+                </div>
+
+                <!-- Available Rooms Box -->
+                <div class="bg-red-500 text-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-2">จำนวนห้องพัก</h3>
+                        <p class="text-3xl font-bold"> ห้องพักทั้งหมด {{ \App\Models\Room::count() }} รายการ</p>
+                        <p class="text-xl font-bold"> ห้องพักที่ว่าง {{ \App\Models\Room::where('status', 'Available')->count() }} รายการ</p>
+                        <p class="text-xl font-bold"> ห้องพักที่ไม่ว่าง {{ \App\Models\Room::where('status', 'Not Available')->count() }} รายการ</p>
+                        <div class="grid grid-cols-4 gap-1 mt-4">
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                            <div class="h-2 bg-white bg-opacity-30 rounded"></div>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.rooms') }}" class="block bg-red-600 hover:bg-red-700 text-center py-2 text-white transition duration-200">
+                        More info
+                    </a>
+                </div>
+            </div>
             <!-- Room Display -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <h3 class="text-lg font-semibold mb-4">ตารางรวมค่าบิลประจำเดือน</h3>
+                <script
+                src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+                </script>
+                    <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+                <script>
+                    const xValues = [@foreach ($month_date as $item)'{{$item}}',@endforeach];
+                    const yValues =[@foreach ($monthly_totals as $item){{$item}},@endforeach];
+                    new Chart("myChart", {
+                    type: "bar",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.1)",
+                        data: yValues
+                        }]
+                    },
+                    options: {
+                        legend: {display: false},
+                        scales: {
+                        yAxes: [{ticks: {min: 1 , max:100000}}],
+                        }
+                    }
+                    });
+                </script>
+                {{-- <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Room Status</h3>
 
                     <div class="mb-4">
@@ -61,7 +129,7 @@
                             @endforeach
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
 

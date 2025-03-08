@@ -12,10 +12,10 @@ use App\Models\Contract;
 use App\Models\MeterReading;
 use App\Models\MeterDetails;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
-use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -36,16 +36,10 @@ class AdminController extends Controller
      */
     public function monthlyRooms()
     {
-
         // Get rooms with L and R prefixes
-
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
-        // $Rooms = DB::table('rooms')
-        // ->join('contracts', 'contracts.room_id', '=', 'rooms.roomID')
-        // ->leftJoin('tenants','contracts.tenant_id','=','tenants.tenantID')
-        // ->select('tenants.tenantName')
-        // ->first();
+
         return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms'));
     }
 
@@ -58,8 +52,33 @@ class AdminController extends Controller
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
 
-        $check_in = $request->check_in;
-        $check_out = $request->check_out;
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
+
+        // $bills = Bill::all();
+        // $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        // $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+
+        // $month_price = Bill::all();
+
+
+        //     $monthly_totals = [];
+        //     $month_date = [];
+
+        //     // สร้าง loop เพื่อรวมยอดตามเดือน
+        //     foreach ($month_price as $item) {
+        //         $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+        //         $month_date[] = $month;
+
+        //         if (!isset($monthly_totals[$month])) {
+        //             $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+        //         }
+
+        //         // บวกยอดราคาในเดือนนั้น
+        //         $monthly_totals[$month] += $item->total_price;
+        //     }
+        //     $month_date = array_unique($month_date);
 
         // Get all bookings if date filter is applied
         $bookings = null;
@@ -74,8 +93,6 @@ class AdminController extends Controller
                 ->get()
                 ->groupBy('room_id');
 
-
-
             $bookings_month = Contract::whereDate('start_date', '<=', $check_out)
                 ->whereDate('end_date', '>=', $check_in)
                 ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
@@ -85,34 +102,22 @@ class AdminController extends Controller
                 ->get()
                 ->groupBy('room_id');
         }
+
         if($bookings && $bookings->isNotEmpty()){
             $daily_room_id_that_has_been_taken = $bookings;
-            $monthly_room_id_that_has_been_taken = $bookings_month;
         }
         else{
             $daily_room_id_that_has_been_taken = [];
+        }
+
+        if($bookings_month && $bookings_month->isNotEmpty()){
+            $monthly_room_id_that_has_been_taken = $bookings_month;
+        }
+        else{
             $monthly_room_id_that_has_been_taken = [];
         }
-        // echo ("<h1>");
-        // echo("xxxxxxxxxxxx");
-        // echo($daily_room_id_that_has_been_taken[0]);
-        // echo($bookings);
-        // echo("</h1>");
 
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
-    }
-
-    /**
-     * Pending payments management
-     */
-    public function pendingPayments()
-    {
-        $pendingBills = Bill::where('status', 'รอชำระเงิน')
-            ->with(['room', 'tenant'])
-            ->orderBy('BillDate', 'desc')
-            ->get();
-
-        return view('admin.pending-payments', compact('pendingBills'));
+        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
     }
 
     /**
@@ -171,9 +176,9 @@ class AdminController extends Controller
             return redirect()->route('admin.monthly-tenants')->with('error', 'ไม่พบข้อมูลลูกค้า');
         }
 
-        // Get booking for this tenant
-        $booking = Booking::where('tenant_id', $tenantID)->first();
-        if ($booking) {
+        // Get all bookings for this tenant
+        $bookings = Booking::where('tenant_id', $tenantID)->get();
+        foreach ($bookings as $booking) {
             // Get room for this booking
             $room = Room::find($booking->room_id);
             if ($room) {
@@ -210,6 +215,9 @@ class AdminController extends Controller
         // Delete contracts
         Contract::where('tenant_id', $tenantID)->delete();
 
+        // Delete bills associated with this tenant
+        Bill::where('tenantID', $tenantID)->delete();
+
         // Delete tenant
         $tenant->delete();
 
@@ -221,7 +229,245 @@ class AdminController extends Controller
      */
     public function dailyTenants()
     {
-        return view('admin.daily-tenants');
+        // Get daily tenants with their rooms and bookings
+        $tenants = Tenant::where('tenant_type', 'daily')
+            ->with(['bookings.room'])
+            ->get();
+
+        return view('admin.daily-tenants', compact('tenants'));
+    }
+
+    /**
+     * Get available rooms for daily booking
+     */
+    public function getAvailableRoomsForDaily()
+    {
+        $rooms = Room::where('status', 'Available')->get();
+        return response()->json(['rooms' => $rooms]);
+    }
+
+    /**
+     * Create a new daily tenant/booking
+     */
+    public function createDailyTenant(Request $request)
+    {
+        try {
+            $request->validate([
+                'roomNumber' => 'required|string',
+                'tenantName' => 'required|string',
+                'tenantTel' => 'required|string',
+                'check_in' => 'required_without:checkin|date',
+                'check_out' => 'required_without:checkout|date|after:check_in',
+                'checkin' => 'required_without:check_in|date',
+                'checkout' => 'required_without:check_out|date|after:checkin',
+                'deposit' => 'required|numeric',
+            ]);
+
+            // Get check-in and check-out dates from request, supporting both naming conventions
+            $check_in = $request->checkin ?? $request->check_in;
+            $check_out = $request->checkout ?? $request->check_out;
+
+            // Get room by room number
+            $room = Room::where('roomNumber', $request->roomNumber)->firstOrFail();
+
+            // Check if room is available
+            if ($room->status != "Available") {
+                return redirect()->back()->with('error', 'ห้องไม่ว่าง');
+            }
+
+            // Update room status to Not Available
+            $room->update([
+                'status' => "Not Available",
+            ]);
+
+            // Create new tenant
+            $tenant = new Tenant();
+            $tenant->tenantName = $request->tenantName;
+            $tenant->tenant_type = 'daily';
+            $tenant->telNumber = $request->tenantTel;
+
+            // For daily tenants, use the room's user
+            $users = User::where('name', $request->roomNumber)->first();
+            if (!$users) {
+                return redirect()->back()->with('error', 'ไม่พบผู้ใช้สำหรับห้องนี้');
+            }
+            $tenant->user_id_tenant = $users->id;
+            $users->password = bcrypt($request->tenantTel);
+            $users->save();
+
+            $tenant->save();
+
+            // Calculate number of days and total price
+            $checkInDate = new \DateTime($check_in);
+            $checkOutDate = new \DateTime($check_out);
+            $interval = $checkInDate->diff($checkOutDate);
+            $days = $interval->days;
+
+            // Use daily rate from room if available, otherwise use a default
+            $dailyRate = $room->daily_rate ?? 600; // Default daily rate if not set
+            $totalPrice = $days * $dailyRate;
+
+            // Create contract for daily tenant
+            $contract = new Contract();
+            $contract->start_date = $check_in;
+            $contract->end_date = $check_out;
+            $contract->room_id = $room->roomID;
+            $contract->tenant_id = $tenant->tenantID;
+            $contract->contract_date = today();
+            $contract->save();
+
+            // Create booking with proper field mapping
+            $booking = new Booking();
+            $booking->tenant_id = $tenant->tenantID;
+            $booking->room_id = $room->roomID;
+            $booking->booking_type = 'daily';
+
+            // Ensure check_in and check_out are properly set
+            $booking->check_in = $check_in;
+            $booking->check_out = $check_out;
+            $booking->deposit = $request->deposit;
+            $booking->save();
+
+            // Update meter reading with tenant
+            $meter_reading = MeterReading::where('room_id', $room->roomID)->first();
+            if ($meter_reading) {
+                $meter_reading->tenant_id = $tenant->tenantID;
+                $meter_reading->save();
+            }
+
+            return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Daily tenant creation error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update daily tenant
+     */
+    public function updateDailyTenant(Request $request)
+    {
+        $request->validate([
+            'tenantID' => 'required|exists:tenants,tenantID',
+            'tenantName' => 'required|string',
+            'tenantTel' => 'required|string',
+            'check_in' => 'required_without:checkin|date',
+            'check_out' => 'required_without:checkout|date|after:check_in',
+            'checkin' => 'required_without:check_in|date',
+            'checkout' => 'required_without:check_out|date|after:checkin',
+        ]);
+
+        // Get check-in and check-out dates from request, supporting both naming conventions
+        $check_in = $request->checkin ?? $request->check_in;
+        $check_out = $request->checkout ?? $request->check_out;
+
+        // Update tenant
+        $tenant = Tenant::find($request->tenantID);
+        $tenant->tenantName = $request->tenantName;
+        $tenant->telNumber = $request->tenantTel;
+        $tenant->save();
+
+        // Update booking
+        $booking = Booking::where('tenant_id', $tenant->tenantID)->first();
+        if ($booking) {
+            $booking->check_in = $check_in;
+            $booking->check_out = $check_out;
+            $booking->save();
+        }
+
+        // Also update the contract dates to match
+        $contract = Contract::where('tenant_id', $tenant->tenantID)->first();
+        if ($contract) {
+            $contract->start_date = $check_in;
+            $contract->end_date = $check_out;
+            $contract->save();
+        }
+
+        return redirect()->route('admin.daily-tenants')->with('success', 'อัพเดทข้อมูลการจองเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Delete daily tenant/booking
+     */
+    public function deleteDailyTenant($tenantID)
+    {
+        $tenant = Tenant::find($tenantID);
+        if (!$tenant) {
+            return redirect()->route('admin.daily-tenants')->with('error', 'ไม่พบข้อมูลลูกค้า');
+        }
+
+        // Get booking for this tenant
+        $booking = Booking::where('tenant_id', $tenantID)->first();
+        if ($booking) {
+            // Get room for this booking
+            $room = Room::find($booking->room_id);
+            if ($room) {
+                // Update room status to Available
+                $room->status = 'Available';
+                $room->save();
+
+                // Find and clear meter readings for this room
+                $meterReading = MeterReading::where('room_id', $room->roomID)->first();
+                if ($meterReading) {
+                    // Clear tenant association
+                    $meterReading->tenant_id = null;
+                    $meterReading->save();
+                }
+            }
+
+            // Delete booking
+            $booking->delete();
+        }
+
+        // Delete contracts if any
+        Contract::where('tenant_id', $tenantID)->delete();
+
+        // Delete tenant
+        $tenant->delete();
+
+        return redirect()->route('admin.daily-tenants')->with('success', 'ยกเลิกการจองเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Get daily tenant details
+     */
+    public function getDailyTenantDetails($tenantId)
+    {
+        $tenant = Tenant::with('bookings')->find($tenantId);
+        if (!$tenant) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        // Get the most recent booking for this tenant
+        $booking = $tenant->bookings->sortByDesc('created_at')->first();
+
+        // Get room from booking
+        $room = null;
+        if ($booking && $booking->room_id) {
+            $room = Room::find($booking->room_id);
+        }
+
+        // Calculate number of days and total price
+        $days = 0;
+        $totalPrice = 0;
+        if ($booking && $booking->check_in && $booking->check_out) {
+            $checkIn = new \DateTime($booking->check_in);
+            $checkOut = new \DateTime($booking->check_out);
+            $interval = $checkIn->diff($checkOut);
+            $days = $interval->days;
+
+            // Use daily rate from room if available, otherwise use a default
+            $dailyRate = $room ? ($room->daily_rate ?? 600) : 600; // Default daily rate if not set
+            $totalPrice = $days * $dailyRate;
+        }
+
+        return response()->json([
+            'tenant' => $tenant,
+            'booking' => $booking,
+            'room' => $room,
+            'days' => $days,
+            'totalPrice' => $totalPrice
+        ]);
     }
 
     /**
@@ -299,10 +545,38 @@ class AdminController extends Controller
         $unit_price_water = $latestExpense ? $latestExpense->unit_price_water : null;
         $unit_price_electricity = $latestExpense ? $latestExpense->unit_price_electricity : null;
 
+
+        $check_in = $request->checkin ?? date('Y-m-d');
+        $check_out = $request->checkout ?? date('Y-m-d');
+
+        $bills = Bill::all();
+        $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+        $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+
+        $month_price = Bill::all();
+
+
+            $monthly_totals = [];
+            $month_date = [];
+
+            // สร้าง loop เพื่อรวมยอดตามเดือน
+            foreach ($month_price as $item) {
+                $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+                $month_date[] = $month;
+
+                if (!isset($monthly_totals[$month])) {
+                    $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+                }
+
+                // บวกยอดราคาในเดือนนั้น
+                $monthly_totals[$month] += $item->total_price;
+            }
+            $month_date = array_unique($month_date);
+
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
 
-        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings'));
+        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings', 'monthly_totals', 'month_date'));
     }
 
     public function updateUnitPrices(Request $request)
@@ -319,7 +593,7 @@ class AdminController extends Controller
             'updated_at' => now()
         ]);
 
-        return redirect()->back()->with('success', 'Unit prices updated successfully');
+        return redirect()->back()->with('success', 'ปรับราคาต่อหน่วยเสร็จสิ้น');
     }
 
     public function updateMeterReadings(Request $request)
@@ -467,10 +741,16 @@ class AdminController extends Controller
             $room = Room::find($booking->room_id);
         }
 
+        // Get contract for this tenant
+        $contract = Contract::where('tenant_id', $tenantId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
         return response()->json([
             'tenant' => $tenant,
             'booking' => $booking,
-            'room' => $room
+            'room' => $room,
+            'contract' => $contract
         ]);
     }
 
@@ -522,26 +802,26 @@ class AdminController extends Controller
      */
     public function createBill(Request $request)
     {
-        // $request->validate([
-        //     'roomID' => 'required|exists:rooms,roomID',
-        //     'tenantID' => 'required|exists:tenants,tenantID',
-        //     'billing_month' => 'required|integer|min:1|max:12',
-        //     'billing_year' => 'required|integer|min:2000|max:2100',
-        //     'water_meter_start' => 'required|numeric|min:0',
-        //     'water_meter_end' => 'required|numeric|min:0',
-        //     'electricity_meter_start' => 'required|numeric|min:0',
-        //     'electricity_meter_end' => 'required|numeric|min:0',
-        //     'water_units' => 'required|numeric|min:0',
-        //     'electricity_units' => 'required|numeric|min:0',
-        //     'water_rate' => 'required|numeric|min:0',
-        //     'electricity_rate' => 'required|numeric|min:0',
-        //     'room_rate' => 'required|numeric|min:0',
-        //     'damage_fee' => 'nullable|numeric|min:0',
-        //     'overdue_fee' => 'nullable|numeric|min:0',
-        //     'water_price' => 'required|numeric|min:0',
-        //     'electricity_price' => 'required|numeric|min:0',
-        //     'total_price' => 'required|numeric|min:0',
-        // ]);
+        $request->validate([
+            'roomID' => 'required|exists:rooms,roomID',
+            'tenantID' => 'required|exists:tenants,tenantID',
+            'billing_month' => 'required|integer|min:1|max:12',
+            'billing_year' => 'required|integer|min:2000|max:2100',
+            'water_meter_start' => 'required|numeric|min:0',
+            'water_meter_end' => 'required|numeric|min:0',
+            'electricity_meter_start' => 'required|numeric|min:0',
+            'electricity_meter_end' => 'required|numeric|min:0',
+            'water_units' => 'required|numeric|min:0',
+            'electricity_units' => 'required|numeric|min:0',
+            'water_rate' => 'required|numeric|min:0',
+            'electricity_rate' => 'required|numeric|min:0',
+            'room_rate' => 'required|numeric|min:0',
+            'damage_fee' => 'nullable|numeric|min:0',
+            'overdue_fee' => 'nullable|numeric|min:0',
+            'water_price' => 'required|numeric|min:0',
+            'electricity_price' => 'required|numeric|min:0',
+            'total_price' => 'required|numeric|min:0',
+        ]);
 
         // Create bill date from month and year
         $billDate = date('Y-m-d', strtotime($request->billing_year . '-' . $request->billing_month . '-01'));
@@ -553,38 +833,33 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Bill not found');
             }
         } else {
+            // Check if a bill already exists for this room and month
+            $existingBill = Bill::where('roomID', $request->roomID)
+                ->whereYear('BillDate', $request->billing_year)
+                ->whereMonth('BillDate', $request->billing_month)
+                ->first();
+
+            if ($existingBill) {
+                return redirect()->back()->with('error', 'ไม่สามารถออกบิลซ้ำในเดือนเดียวกันได้ กรุณาแก้ไขบิลที่มีอยู่แล้ว');
+            }
+
             // Create a new bill
             $bill = new Bill();
-            $tenantId = Contract::where('room_id',$request->roomID)->first();
-            // Set bill data
-            $bill->roomID = $request->roomID;
-            $bill->tenantID = $tenantId->tenant_id;
-            $bill->BillDate = $billDate;
-            // $bill->room_rate = $request->room_rate;
-            $bill->damage_fee = $request->damage_fee;
-            $bill->overdue_fee = $request->overdue_fee;
-            $bill->water_price = $request->water_price;
-            $bill->electricity_price = $request->electricity_price;
-            $bill->total_price = $request->total_price;
-            // $bill->status = 'รอชำระเงิน'; // Set status with default if not provided
-            $bill->save();
-
         }
 
-        // $tenantId = Contract::where('room_id',$request->roomID);
-        // // Set bill data
-        // $bill->roomID = $request->roomID;
-        // $bill->tenantID = $tenantId;
-        // $bill->BillDate = $billDate;
-        // $bill->room_rate = $request->room_rate;
-        // $bill->damage_fee = $request->damage_fee;
-        // $bill->overdue_fee = $request->overdue_fee;
-        // $bill->water_price = $request->water_price;
-        // $bill->electricity_price = $request->electricity_price;
-        // $bill->total_price = $request->total_price;
-        // $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
-        // $bill->save();
-        //
+        // Set bill data
+        $bill->roomID = $request->roomID;
+        $bill->tenantID = $request->tenantID;
+        $bill->BillDate = $billDate;
+        $bill->room_rate = $request->room_rate;
+        $bill->damage_fee = $request->damage_fee;
+        $bill->overdue_fee = $request->overdue_fee;
+        $bill->water_price = $request->water_price;
+        $bill->electricity_price = $request->electricity_price;
+        $bill->total_price = $request->total_price;
+        $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
+        $bill->save();
+
         // Update meter readings
         $meterReading = MeterReading::firstOrCreate(
             ['room_id' => $request->roomID],
@@ -760,4 +1035,13 @@ class AdminController extends Controller
 
         return redirect()->route('admin.monthly-tenants')->with('success', 'เพิ่มลูกค้ารายเดือนเรียบร้อยแล้ว');
     }
+    public function pendingPayments()
+        {
+            $pendingBills = Bill::where('status', 'รอชำระเงิน')
+                ->with(['room', 'tenant'])
+                ->orderBy('BillDate', 'desc')
+                ->get();
+
+            return view('admin.pending-payments', compact('pendingBills'));
+        }
 }

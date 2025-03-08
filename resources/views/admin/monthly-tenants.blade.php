@@ -25,14 +25,14 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">รายชื่อลูกค้ารายเดือน</h3>
                         <div class="flex space-x-2">
-                            <div class="relative">
+                            {{-- <div class="relative">
                                 <input type="text" placeholder="ค้นหา..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
                                 </div>
-                            </div>
+                            </div> --}}
                             <x-button onclick="showAddTenantForm()">
                                 + เพิ่มลูกค้าใหม่
                             </x-button>
@@ -58,7 +58,7 @@
                                     @foreach($tenants as $tenant)
                                         <tr data-tenant-id="{{ $tenant->tenantID }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->room ? $tenant->bookings->room->roomNumber : 'ไม่ระบุ' }}
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room ? $tenant->bookings->first()->room->roomNumber : 'ไม่ระบุ' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                                 {{ $tenant->tenantName }}
@@ -67,13 +67,13 @@
                                                 {{ $tenant->telNumber }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->check_in ? date('d/m/Y', strtotime($tenant->bookings->check_in)) : 'ไม่ระบุ' }}
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->check_in ? date('d/m/Y', strtotime($tenant->bookings->first()->check_in)) : 'ไม่ระบุ' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $tenant->bookings && $tenant->bookings->room ? $tenant->bookings->room->month_rate ?? 'ไม่ระบุ' : 'ไม่ระบุ' }} บาท
+                                                {{ $tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room ? $tenant->bookings->first()->room->month_rate ?? 'ไม่ระบุ' : 'ไม่ระบุ' }} บาท
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                @if($tenant->bookings && $tenant->bookings->room)
+                                                @if($tenant->bookings && $tenant->bookings->first() && $tenant->bookings->first()->room)
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                         อยู่ระหว่างเช่า
                                                     </span>
@@ -271,6 +271,13 @@
                         <p id="detail_status" class="text-base text-gray-900 dark:text-gray-100">-</p>
                     </div>
                 </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">เอกสารสัญญา</p>
+                    <div id="contract_file_container" class="mt-2">
+                        <img id="contract_file_image" src="" alt="เอกสารสัญญา" class="max-w-full h-auto rounded-lg shadow-md hidden">
+                        <p id="no_contract_file" class="text-base text-gray-900 dark:text-gray-100">ไม่มีเอกสารสัญญา</p>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end">
@@ -376,6 +383,7 @@
                     const tenant = data.tenant;
                     const booking = data.booking;
                     const room = data.room;
+                    const contract = data.contract;
 
                     // Set tenant details
                     document.getElementById('detail_tenant_name').textContent = tenant.tenantName || 'ไม่ระบุ';
@@ -391,12 +399,26 @@
                     document.getElementById('detail_due_date').textContent = booking && booking.due_date ?
                         new Date(booking.due_date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
 
-                    // Set deposit - this is the key change we're making
+                    // Set deposit
                     document.getElementById('detail_deposit').textContent = booking && booking.deposit ?
                         booking.deposit + ' บาท' : 'ไม่ระบุ';
 
                     // Set status
                     document.getElementById('detail_status').textContent = room ? 'อยู่ระหว่างเช่า' : 'ไม่ได้เช่าห้อง';
+
+                    // Set contract file
+                    const contractFileImage = document.getElementById('contract_file_image');
+                    const noContractFile = document.getElementById('no_contract_file');
+
+                    if (contract && contract.contract_file) {
+                        // The contract_file path is already relative to storage
+                        contractFileImage.src = `/storage/${contract.contract_file}`;
+                        contractFileImage.classList.remove('hidden');
+                        noContractFile.classList.add('hidden');
+                    } else {
+                        contractFileImage.classList.add('hidden');
+                        noContractFile.classList.remove('hidden');
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching tenant details:', error);
@@ -422,25 +444,30 @@
         }
 
         function deleteTenant(tenantId) {
-            // Send delete request to the server
+            // Create a form data object with CSRF token and _method=DELETE
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            formData.append('_method', 'DELETE');
+
+            // Send delete request to the server using POST method with _method=DELETE
             fetch(`/admin/delete-monthly-tenant/${tenantId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                }
+                method: 'POST',
+                body: formData
             })
             .then(response => {
                 if (response.ok) {
-                    // Reload the page to show updated tenant list
+                    // Show alert first, then reload the page
+                    alert('ทำการย้ายออกเสร็จสิ้น');
                     window.location.reload();
                 } else {
-                    throw new Error('Failed to delete tenant');
+                    return response.text().then(text => {
+                        throw new Error(text || 'Failed to delete tenant');
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error deleting tenant:', error);
-                alert('เกิดข้อผิดพลาดในการลบข้อมูลลูกค้า');
+                alert('เกิดข้อผิดพลาดในการแจ้งย้ายออก');
                 hideDeleteConfirmation();
             });
         }
