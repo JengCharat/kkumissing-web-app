@@ -62,13 +62,54 @@ function displayBookings(bookings) {
 }
 
 function daily_form() {
+    // Check if a room has been selected
+    const selectedRoom = document.getElementById("room_ID_select").textContent.trim();
+    if (!selectedRoom) {
+        // If no room is selected, show an alert
+        alert("กรุณาเลือกห้องก่อนทำการจอง");
+        return;
+    }
+
+    // Check if dates have been selected in the filter
+    const filterCheckin = document.getElementById("filter_checkin").value;
+    const filterCheckout = document.getElementById("filter_checkout").value;
+
+    if (!filterCheckin || !filterCheckout) {
+        // If dates are not selected, show an alert
+        alert("กรุณาเลือกวันที่เช็คอินและเช็คเอาท์ก่อนทำการจอง");
+        return;
+    }
+
+    // If a room is selected and dates are set, proceed with showing the form
     document.getElementById("monthly_form").style.display = "none";
     document.getElementById("daily_form").style.display = "block";
+
+    // Display the room number in the daily booking form
+    document.getElementById("room_display_daily").textContent = selectedRoom;
+
+    // Set the check-in and check-out dates from the filter to the booking form
+    document.getElementById("daily_checkin").value = filterCheckin;
+    document.getElementById("daily_checkout").value = filterCheckout;
+
+    // Calculate days and price based on the selected dates
+    calculateDaysAndPrice();
 }
-function monthly_form() {
-    document.getElementById("daily_form").style.display = "none";
-    document.getElementById("monthly_form").style.display = "block";
-}
+// function monthly_form() {
+//     // Check if a room has been selected
+//     const selectedRoom = document.getElementById("room_ID_select").textContent.trim();
+//     if (!selectedRoom) {
+//         // If no room is selected, show an alert
+//         alert("กรุณาเลือกห้องก่อนทำการจอง");
+//         return;
+//     }
+
+//     // If a room is selected, proceed with showing the form
+//     document.getElementById("daily_form").style.display = "none";
+//     document.getElementById("monthly_form").style.display = "block";
+
+//     // Display the room number in the monthly booking form
+//     document.getElementById("room_display_monthly").textContent = selectedRoom;
+// }
 function show_qr() {
     var x = document.getElementById("qr_img_monthly");
     var y = document.getElementById("qr_img_daily");
@@ -130,6 +171,27 @@ function calculateDaysAndPrice() {
         daysCountElement.textContent = '-';
         totalPriceElement.textContent = '-';
     }
+}
+
+// Function to validate the date filter form
+function validateDateFilter() {
+    const checkinInput = document.getElementById('filter_checkin');
+    const checkoutInput = document.getElementById('filter_checkout');
+
+    if (!checkinInput.value || !checkoutInput.value) {
+        alert("กรุณาเลือกวันที่เช็คอินและเช็คเอาท์ก่อนกรอง");
+        return false;
+    }
+
+    const checkinDate = new Date(checkinInput.value);
+    const checkoutDate = new Date(checkoutInput.value);
+
+    if (checkoutDate <= checkinDate) {
+        alert("วันที่เช็คเอาท์ต้องมากกว่าวันที่เช็คอิน");
+        return false;
+    }
+
+    return true;
 }
 
 // Call setMinDates when the document is loaded
