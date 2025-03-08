@@ -101,5 +101,43 @@ function setMinDates() {
     });
 }
 
+// Function to calculate days and price for daily booking
+function calculateDaysAndPrice() {
+    const checkinInput = document.getElementById('daily_checkin');
+    const checkoutInput = document.getElementById('daily_checkout');
+    const daysCountElement = document.getElementById('days_count');
+    const totalPriceElement = document.getElementById('total_price');
+
+    if (checkinInput.value && checkoutInput.value) {
+        const checkinDate = new Date(checkinInput.value);
+        const checkoutDate = new Date(checkoutInput.value);
+
+        // Calculate the difference in days
+        const timeDiff = checkoutDate.getTime() - checkinDate.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+        if (daysDiff > 0) {
+            const dailyRate = 400; // Default rate
+            const totalPrice = dailyRate * daysDiff;
+
+            daysCountElement.textContent = daysDiff + ' วัน';
+            totalPriceElement.textContent = totalPrice + ' บาท';
+        } else {
+            daysCountElement.textContent = 'โปรดเลือกวันที่ให้ถูกต้อง';
+            totalPriceElement.textContent = '-';
+        }
+    } else {
+        daysCountElement.textContent = '-';
+        totalPriceElement.textContent = '-';
+    }
+}
+
 // Call setMinDates when the document is loaded
-document.addEventListener('DOMContentLoaded', setMinDates);
+document.addEventListener('DOMContentLoaded', function() {
+    setMinDates();
+
+    // Initialize days and price calculation if dates are already set
+    if (document.getElementById('daily_checkin') && document.getElementById('daily_checkout')) {
+        calculateDaysAndPrice();
+    }
+});

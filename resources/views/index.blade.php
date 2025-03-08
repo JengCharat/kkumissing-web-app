@@ -34,6 +34,15 @@
 <body class="bg-gray-100">
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Success Message -->
+            @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+                <strong class="font-bold">จองห้องสำเร็จ!</strong>
+                <span class="block sm:inline">{{ session('success') }}</span>
+                <p class="mt-2">หากมีข้อสงสัยกรุณาติดต่อเจ้าของหอพักที่เบอร์: <strong>088-670-7555</strong></p>
+            </div>
+            @endif
+
             <!-- Room Display -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
@@ -234,7 +243,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">อัพโหลดสลิป</label>
-                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
                             </div>
 
                             <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">ยืนยันการจอง</button>
@@ -251,11 +260,21 @@
 
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คอิน</label>
-                                <input type="date" name="checkin" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                                <input type="date" name="checkin" id="daily_checkin" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required onchange="calculateDaysAndPrice()">
                             </div>
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คเอาท์</label>
-                                <input type="date" name="checkout" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                                <input type="date" name="checkout" id="daily_checkout" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required onchange="calculateDaysAndPrice()">
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนวัน</label>
+                                <div id="days_count" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">-</div>
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ราคารวม</label>
+                                <div id="total_price" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">-</div>
                             </div>
 
                             <div>
@@ -279,7 +298,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">อัพโหลดสลิป</label>
-                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
                             </div>
 
                             <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">ยืนยันการจอง</button>
