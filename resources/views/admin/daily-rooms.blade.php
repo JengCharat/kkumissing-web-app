@@ -141,7 +141,7 @@
                                         <button onclick="select_this_room('{{ $item->roomID }}')"
                                                 class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
                                             {{ $item->roomNumber }}
-                                            <h1>this is monthly room</h1>
+                                            <h1>ห้องนี้ถูกจองรายเดือนแล้ว</h1>
                                         </button>
                                     @endif
                                 @endforeach
@@ -216,7 +216,7 @@
                                         <button onclick="select_this_room('{{ $item->roomID }}')"
                                                 class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
                                             {{ $item->roomNumber }}
-                                            <h1>this is monthly room</h1>
+                                            <h1>ห้องนี้ถูกจองรายเดือนแล้ว</h1>
                                         </button>
                                     @endif
                                 @endforeach
@@ -289,7 +289,7 @@
 
                             <div>
                                 <x-label for="img" value="อัพโหลดสลิป" />
-                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1">
+                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1" required>
                             </div>
 
                             <div class="flex justify-end mt-4">
@@ -303,7 +303,7 @@
                         </form>
                     </div>
                 </div>
-                
+
                 <script src="{{ asset('js/daily-rooms.js') }}"></script>
             </div>
         </div>

@@ -1,4 +1,11 @@
 function select_this_room(roomId) {
+    // Check if the room is already booked monthly (blue button)
+    const roomElement = document.querySelector(`button[onclick="select_this_room('${roomId}')"]`);
+    if (roomElement && roomElement.classList.contains('bg-blue-500')) {
+        alert('ห้องนี้ถูกจองรายเดือนแล้ว ไม่สามารถจองรายวันได้');
+        return;
+    }
+
     // Fetch the room details to get the room number
     fetch(`/room-bookings/${roomId}`)
         .then(response => {
