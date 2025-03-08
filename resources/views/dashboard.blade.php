@@ -29,24 +29,47 @@
 
                 <div class="bg-blue-50 p-6 rounded-lg mb-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-blue-800">Total Amount Due</h3>
-                        <p class="text-2xl font-bold text-blue-800">฿ {{ number_format($rooms->water_price + $rooms->electricity_price, 2) }}</p>
-                        <form method = "post" action="/dashboard/upload_slip" enctype="multipart/form-data">
-                            @csrf
-                            <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
-                            <input type="file" name = "slip_image">
-                            <button>PAY</button>
-                            <br>
-                            {{$status}}
-                        </form>
+                        <div>
+                            <h3 class="text-xl font-semibold text-blue-800">ยอดรวมที่ต้องชำระ</h3>
+                            @if($bill && $bill->BillDate)
+                                <p class="text-sm text-blue-600">วันที่ออกบิล: {{ \Carbon\Carbon::parse($bill->BillDate)->format('d/m/Y') }}</p>
+                            @endif
+                        </div>
 
-                        <button class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" onclick="printReceipt({{$bills_id}})">พิมพ์ใบเสร็จ</button>
-                        <script>
-                            function printReceipt(billId) {
-                                // Open a new window or tab with the receipt for printing
-                                window.open(`/dashboard/print-receipt/{{$bills_id}}`, '_blank');
-                            }
-                        </script>
+                        @if($bill && $bill->status == 'ชำระแล้ว')
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-green-600">ชำระเงินเรียบร้อยแล้ว</p>
+                                <p class="text-sm text-green-600">ขอบคุณสำหรับการชำระเงิน</p>
+                            </div>
+                            <div></div> <!-- Empty div to maintain the flex layout -->
+                        @elseif($bill)
+                            <p class="text-2xl font-bold text-blue-800">
+                                ฿ {{ number_format($bill->water_price + $bill->electricity_price + $bill->room_rate + $bill->damage_fee + $bill->overdue_fee, 2) }}</p>
+                            <form method="post" action="/dashboard/upload_slip" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
+                                <input type="file" name="slip_image" class="block w-full text-sm text-gray-500
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-full file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-blue-50 file:text-blue-700
+                                    hover:file:bg-blue-100" required>
+                                <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">ชำระเงิน</button>
+                                <br>
+                                @if(session('status'))
+                                    <span class="text-green-600 font-semibold">{{ session('status') }}</span>
+                                @endif
+                                @if(session('error'))
+                                    <span class="text-red-600 font-semibold">{{ session('error') }}</span>
+                                @endif
+                            </form>
+                        @else
+                            <div class="text-center">
+                                <p class="text-xl font-bold text-gray-600">ไม่พบข้อมูลบิล</p>
+                                <p class="text-sm text-gray-600">กรุณาติดต่อผู้ดูแลระบบ</p>
+                            </div>
+                            <div></div> <!-- Empty div to maintain the flex layout -->
+                        @endif
                     </div>
 
                     @if($bill && $bill->status != 'ชำระแล้ว')

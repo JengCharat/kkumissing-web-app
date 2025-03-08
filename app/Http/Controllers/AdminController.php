@@ -16,7 +16,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
-use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -37,16 +36,10 @@ class AdminController extends Controller
      */
     public function monthlyRooms()
     {
-
         // Get rooms with L and R prefixes
-
         $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
         $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
-        // $Rooms = DB::table('rooms')
-        // ->join('contracts', 'contracts.room_id', '=', 'rooms.roomID')
-        // ->leftJoin('tenants','contracts.tenant_id','=','tenants.tenantID')
-        // ->select('tenants.tenantName')
-        // ->first();
+
         return view('admin.monthly-rooms', compact('Lrooms', 'Rrooms'));
     }
 
@@ -125,47 +118,6 @@ class AdminController extends Controller
         }
 
         return view('admin.daily-rooms', compact('Lrooms', 'Rrooms', 'daily_room_id_that_has_been_taken', 'monthly_room_id_that_has_been_taken', 'check_in', 'check_out'));
-    }
-
-        // Get all bookings if date filter is applied
-        $bookings = null;
-        $bookings_month = null;
-        if ($check_in && $check_out) {
-            $bookings = Contract::whereDate('start_date', '<=', $check_out)
-                ->whereDate('end_date', '>=', $check_in)
-                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
-                ->where('tenants.tenant_type', 'daily')
-                ->select('contracts.*','tenants.*')
-                ->orderBy('contracts.start_date', 'desc')
-                ->get()
-                ->groupBy('room_id');
-
-
-
-            $bookings_month = Contract::whereDate('start_date', '<=', $check_out)
-                ->whereDate('end_date', '>=', $check_in)
-                ->join('tenants', 'contracts.tenant_id', '=', 'tenants.tenantID')
-                ->where('tenants.tenant_type', 'monthly')
-                ->select('contracts.*','tenants.*')
-                ->orderBy('contracts.start_date', 'desc')
-                ->get()
-                ->groupBy('room_id');
-        }
-        if($bookings && $bookings->isNotEmpty()){
-            $daily_room_id_that_has_been_taken = $bookings;
-            $monthly_room_id_that_has_been_taken = $bookings_month;
-        }
-        else{
-            $daily_room_id_that_has_been_taken = [];
-            $monthly_room_id_that_has_been_taken = [];
-        }
-        // echo ("<h1>");
-        // echo("xxxxxxxxxxxx");
-        // echo($daily_room_id_that_has_been_taken[0]);
-        // echo($bookings);
-        // echo("</h1>");
-
-        return view('admin.daily-rooms', compact('Lrooms', 'Rrooms','daily_room_id_that_has_been_taken','monthly_room_id_that_has_been_taken'));
     }
 
     /**
@@ -850,26 +802,26 @@ class AdminController extends Controller
      */
     public function createBill(Request $request)
     {
-        // $request->validate([
-        //     'roomID' => 'required|exists:rooms,roomID',
-        //     'tenantID' => 'required|exists:tenants,tenantID',
-        //     'billing_month' => 'required|integer|min:1|max:12',
-        //     'billing_year' => 'required|integer|min:2000|max:2100',
-        //     'water_meter_start' => 'required|numeric|min:0',
-        //     'water_meter_end' => 'required|numeric|min:0',
-        //     'electricity_meter_start' => 'required|numeric|min:0',
-        //     'electricity_meter_end' => 'required|numeric|min:0',
-        //     'water_units' => 'required|numeric|min:0',
-        //     'electricity_units' => 'required|numeric|min:0',
-        //     'water_rate' => 'required|numeric|min:0',
-        //     'electricity_rate' => 'required|numeric|min:0',
-        //     'room_rate' => 'required|numeric|min:0',
-        //     'damage_fee' => 'nullable|numeric|min:0',
-        //     'overdue_fee' => 'nullable|numeric|min:0',
-        //     'water_price' => 'required|numeric|min:0',
-        //     'electricity_price' => 'required|numeric|min:0',
-        //     'total_price' => 'required|numeric|min:0',
-        // ]);
+        $request->validate([
+            'roomID' => 'required|exists:rooms,roomID',
+            'tenantID' => 'required|exists:tenants,tenantID',
+            'billing_month' => 'required|integer|min:1|max:12',
+            'billing_year' => 'required|integer|min:2000|max:2100',
+            'water_meter_start' => 'required|numeric|min:0',
+            'water_meter_end' => 'required|numeric|min:0',
+            'electricity_meter_start' => 'required|numeric|min:0',
+            'electricity_meter_end' => 'required|numeric|min:0',
+            'water_units' => 'required|numeric|min:0',
+            'electricity_units' => 'required|numeric|min:0',
+            'water_rate' => 'required|numeric|min:0',
+            'electricity_rate' => 'required|numeric|min:0',
+            'room_rate' => 'required|numeric|min:0',
+            'damage_fee' => 'nullable|numeric|min:0',
+            'overdue_fee' => 'nullable|numeric|min:0',
+            'water_price' => 'required|numeric|min:0',
+            'electricity_price' => 'required|numeric|min:0',
+            'total_price' => 'required|numeric|min:0',
+        ]);
 
         // Create bill date from month and year
         $billDate = date('Y-m-d', strtotime($request->billing_year . '-' . $request->billing_month . '-01'));
@@ -893,36 +845,21 @@ class AdminController extends Controller
 
             // Create a new bill
             $bill = new Bill();
-            $tenantId = Contract::where('room_id',$request->roomID)->first();
-            // Set bill data
-            $bill->roomID = $request->roomID;
-            $bill->tenantID = $tenantId->tenant_id;
-            $bill->BillDate = $billDate;
-            // $bill->room_rate = $request->room_rate;
-            $bill->damage_fee = $request->damage_fee;
-            $bill->overdue_fee = $request->overdue_fee;
-            $bill->water_price = $request->water_price;
-            $bill->electricity_price = $request->electricity_price;
-            $bill->total_price = $request->total_price;
-            // $bill->status = 'รอชำระเงิน'; // Set status with default if not provided
-            $bill->save();
-
         }
 
-        // $tenantId = Contract::where('room_id',$request->roomID);
-        // // Set bill data
-        // $bill->roomID = $request->roomID;
-        // $bill->tenantID = $tenantId;
-        // $bill->BillDate = $billDate;
-        // $bill->room_rate = $request->room_rate;
-        // $bill->damage_fee = $request->damage_fee;
-        // $bill->overdue_fee = $request->overdue_fee;
-        // $bill->water_price = $request->water_price;
-        // $bill->electricity_price = $request->electricity_price;
-        // $bill->total_price = $request->total_price;
-        // $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
-        // $bill->save();
-        //
+        // Set bill data
+        $bill->roomID = $request->roomID;
+        $bill->tenantID = $request->tenantID;
+        $bill->BillDate = $billDate;
+        $bill->room_rate = $request->room_rate;
+        $bill->damage_fee = $request->damage_fee;
+        $bill->overdue_fee = $request->overdue_fee;
+        $bill->water_price = $request->water_price;
+        $bill->electricity_price = $request->electricity_price;
+        $bill->total_price = $request->total_price;
+        $bill->status = $request->status ?? 'รอชำระเงิน'; // Set status with default if not provided
+        $bill->save();
+
         // Update meter readings
         $meterReading = MeterReading::firstOrCreate(
             ['room_id' => $request->roomID],

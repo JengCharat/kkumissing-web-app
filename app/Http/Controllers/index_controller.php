@@ -56,9 +56,24 @@ public function index(Request $request){
     public function hire(Request $request){
         $roomNumber = $request->roomNumber;
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
+
+        // Check if room is available
         // if($room->status == "Not Available"){
-        //     abort(404);
+        //     return redirect()->back()->with('error', 'ห้องไม่ว่าง กรุณาเลือกห้องอื่น');
         // }
+
+
+        // Check if there are any existing bookings for this room in the specified date range
+        $existingBookings = Contract::where('room_id', $room->roomID)
+            ->whereDate('start_date', '<=', $request->checkout)
+            ->whereDate('end_date', '>=', $request->checkin)
+            ->exists();
+
+        if ($existingBookings) {
+            return redirect()->back()->with('error', 'ห้องนี้ถูกจองในช่วงเวลาที่เลือกแล้ว กรุณาเลือกห้องหรือวันที่อื่น');
+        }
+
+
         $room->update([
             'status' => "Not Available",
         ]);
@@ -74,10 +89,10 @@ public function index(Request $request){
             $users->password = bcrypt($request->tenantTel);
             $users->save();
         } else {
-            // For daily tenants, use the admin user
-            $adminUser = User::where('email', 'l101@gmail.com')->first();
-            if (!$adminUser) {
-                abort(500, 'Admin user not found');
+            // For daily tenants, use the room's user just like monthly tenants
+            $users = User::where('name', $request->roomNumber)->first();
+            if (!$users) {
+                abort(500, 'User for this room not found');
             }
             $tenant->user_id_tenant = $users->id;
             // Set password only if it's a new user or needs updating
@@ -134,16 +149,26 @@ public function index(Request $request){
         $contract->contract_date = today();
         $contract->save();
         $contract_id = $contract->contractID;
-        $request->validate([
-            'img' => 'required|image|mimes:jpeg,png,jpg,gif',
-        ]);
-        $file = $request->file('img');
-
-        $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
-        $path = $file->storeAs('upload', $filename, 'public');
+        // $request->validate([
+        //     'img' => 'required|image|mimes:jpeg,png,jpg,gif',
+        // ]);
+        //
+        // $file = $request->file('img');
+        //
+        // $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (timestamp + นามสกุลเดิม)
+        // $path = $file->storeAs('upload', $filename, 'public');
+        //
         // $file->store('upload', 'public');
+        //
+        if ($request->hasFile('img') && $request->file('img')->isValid()) {
+            $file = $request->file('img');
 
-        $contract->contract_file = $path;
+            $filename = $contract_id.'-'.$tenant->tenantID. '.' . $file->getClientOriginalExtension(); // ตั้งชื่อไฟล์ใหม่ (contract_id + tenantID + นามสกุลไฟล์)
+            $path = $file->storeAs('upload', $filename, 'public'); // เก็บไฟล์ใน storage/app/public
+
+            $contract->contract_file = $path;
+        }
+
         $contract->save();
 
 
@@ -160,7 +185,6 @@ public function index(Request $request){
         // Set default values for optional fields
         $booking->due_date = $request->due_date ?? null;
         $booking->deposit = $request->deposit ?? 0;
-
         // Debug information
         \Illuminate\Support\Facades\Log::info('Booking data:', [
             'tenant_id' => $tenant->tenantID,
@@ -173,6 +197,7 @@ public function index(Request $request){
         ]);
 
         $booking->save();
+
 
         // Check if the user is an admin and redirect accordingly
         if (auth()->check() && auth()->user()->usertype === 'admin') {
