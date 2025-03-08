@@ -21,7 +21,7 @@
         .admin-sidebar {
             width: 240px;
             min-height: 100vh;
-            background-color: #1a5d1a;
+            background-color: #026102;
             color: white;
             position: fixed;
             left: 0;
@@ -41,10 +41,10 @@
             transition: background-color 0.2s;
         }
         .sidebar-link:hover {
-            background-color: #4a5568;
+            background-color: #2cbd5c;
         }
         .sidebar-link.active {
-            background-color: #4299e1;
+            background-color: #1da74b;
         }
         .sidebar-link svg {
             width: 20px;
@@ -94,7 +94,7 @@
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gradient-to-r from-green-400 to-green-700 dark:from-green-700 dark:to-green-900">
+    <div class="min-h-screen bg-gray-200">
         <!-- Sidebar Navigation -->
         <div class="admin-sidebar" id="sidebar">
             <div class="sidebar-header">
