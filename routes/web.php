@@ -22,8 +22,8 @@ Route::get('/welcome', function () {
 })->name('welcome');
 
 Route::get('/', [index_controller::class, 'index'])->name('index');
-Route::get('/history', [index_controller::class, 'get_history_page'])->name('index');
-Route::post('/history', [index_controller::class, 'get_history_page'])->name('index');
+Route::get('/history', [index_controller::class, 'get_history_page'])->name('indexHistory');
+Route::post('/history', [index_controller::class, 'get_history_page'])->name('indexHistory');
 Route::post('/hire', [index_controller::class, 'hire'])->name('hire');
 Route::get('/room-bookings/{roomId}', [index_controller::class, 'getRoomBookings'])->name('room.bookings');
 

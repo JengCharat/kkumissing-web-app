@@ -57,9 +57,9 @@ public function index(Request $request){
         $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
 
         // Check if room is available
-        if($room->status == "Not Available"){
-            return redirect()->back()->with('error', 'ห้องไม่ว่าง กรุณาเลือกห้องอื่น');
-        }
+        // if($room->status == "Not Available"){
+        //     return redirect()->back()->with('error', 'ห้องไม่ว่าง กรุณาเลือกห้องอื่น');
+        // }
 
         // Check if there are any existing bookings for this room in the specified date range
         $existingBookings = Contract::where('room_id', $room->roomID)

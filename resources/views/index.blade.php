@@ -241,7 +241,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เบอร์</label>
-                                <input type="tel" name="tenantTel" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="tel" name="tenantTel" class="w-full px-3 py-2 border border-gray-300 rounded-md" maxlength="10">
                             </div>
 
                             <div>
@@ -299,7 +299,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เบอร์</label>
-                                <input type="tel" name="tenantTel" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="tel" name="tenantTel" class="w-full px-3 py-2 border border-gray-300 rounded-md" pattern="[0-9\-\+\(\)\s]+" maxlength="10">
                             </div>
 
                             <div>
@@ -313,7 +313,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">อัพโหลดสลิป</label>
-                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                                <input type="file" name="img" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                             </div>
 
                             <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">ยืนยันการจอง</button>
