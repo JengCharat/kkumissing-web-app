@@ -49,8 +49,8 @@
             </div>
             <!-- Room Display -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <h3 class="text-lg font-semibold mb-4">ตารางรวมค่าบิลประจำเดือน</h3>
-                <script
+                <h3 class="text-lg font-semibold mb-4 text-center">ตารางรวมค่าบิลประจำเดือน</h3>
+                {{-- <script
                 src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
                 </script>
                     <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
@@ -76,7 +76,150 @@
                         }
                     }
                     });
+                </script> --}}
+
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+                <div class="p-4">
+                    <!-- กราฟที่ 1 -->
+                    <div class="mb-8">
+                        {{-- <h4 class="text-md font-medium mb-2 text-center">รายรับค่าเช่าและค่าบริการรายเดือน</h4> --}}
+                        <div class="mx-auto" style="width:100%; max-width:800px;">
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- กราฟที่ 2 -->
+                    <div class="mb-4">
+                        {{-- <h4 class="text-md font-medium mb-2 text-center">รายจ่ายและค่าเสียหายรายเดือน</h4> --}}
+                        <div class="mx-auto" style="width:100%; max-width:800px;">
+                            <canvas id="myChart2"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    const xValues = [@foreach ($month_date as $item)'{{$item}}',@endforeach];
+                    // คำนวณรายรับที่รวมค่าเสียหายและค่าล่วงเวลา
+                    const netIncomeValues = [
+                        @foreach ($month_date as $month)
+                            @php
+                                $totalIncome = isset($monthly_totals[$month]) ? $monthly_totals[$month] : 0;
+                                // $damageFee = isset($monthly_damage[$month]) ? $monthly_damage[$month] : 0;
+                                // ค่าเสียหายและค่าล่วงเวลาถือเป็นรายรับ
+                                $netIncome = $totalIncome;
+                                echo $netIncome . ',';
+                            @endphp
+                        @endforeach
+                    ];
+
+                    new Chart(document.getElementById("myChart"), {
+                        type: "bar",
+                        data: {
+                            labels: xValues,
+                            datasets: [{
+                                fill: false,
+                                backgroundColor: "rgba(0,0,255,0.8)",
+                                borderColor: "rgba(0,0,255,0.1)",
+                                data: netIncomeValues,
+                                label: 'รายรับจากค่าเสียหายและค่าล่วงเวลา (บาท)',
+                                fontSize: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            legend: { display: true, position: 'top' },
+                            scales: {
+                                yAxes: [{
+                                    ticks: { min: 0, max: 100000 },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'จำนวนเงิน (บาท)',
+                                        fontSize: 20
+                                    }
+                                }],
+                                xAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'เดือน',
+                                        fontSize: 20
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'รายรับจากค่าเสียหายและค่าล่วงเวลา',
+                                fontSize: 24
+                            }
+                        }
+                    });
+
+                    // กราฟที่ 2 - แสดงค่าน้ำและค่าไฟที่ต้องจ่ายในเดือนนั้น
+                    const xValues2 = [@foreach ($month_date as $item)'{{$item}}',@endforeach];
+                    // สร้างข้อมูลค่าน้ำและค่าไฟรวมกัน
+                    const utilityValues = [
+                        @foreach ($month_date as $month)
+                            @php
+                                $bills = \App\Models\Bill::whereYear('BillDate', substr($month, 0, 4))
+                                    ->whereMonth('BillDate', substr($month, 5, 2))
+                                    ->get();
+                                $waterTotal = 0;
+                                $electricityTotal = 0;
+
+                                foreach ($bills as $bill) {
+                                    $waterTotal += $bill->water_price;
+                                    $electricityTotal += $bill->electricity_price;
+                                }
+
+                                $utilityTotal = $waterTotal + $electricityTotal;
+                                echo $utilityTotal . ',';
+                            @endphp
+                        @endforeach
+                    ];
+
+                    new Chart(document.getElementById("myChart2"), {
+                        type: "line",
+                        data: {
+                            labels: xValues2,
+                            datasets: [{
+                                fill: false,
+                                backgroundColor: "rgba(255,0,0,0.8)", // เปลี่ยนสีให้แตกต่าง
+                                borderColor: "rgba(255,0,0,0.1)",
+                                data: utilityValues,
+                                label: 'ค่าน้ำและค่าไฟ (บาท)',
+                                fontSize: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            legend: { display: true, position: 'top' },
+                            scales: {
+                                yAxes: [{
+                                    ticks: { min: 0, max: 100000 },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'จำนวนเงิน (บาท)',
+                                        fontSize: 20
+                                    }
+                                }],
+                                xAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'เดือน',
+                                        fontSize: 20
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'ค่าน้ำและค่าไฟที่ต้องจ่ายรายเดือน',
+                                fontSize: 24
+                            }
+                        }
+                    });
                 </script>
+
                 {{-- <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Room Status</h3>
 
@@ -134,7 +277,7 @@
 
 
             <!-- Meter Reading Update Form -->
-            <div id="meter_reading_form" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mt-6" style="display: none;">
+            {{-- <div id="meter_reading_form" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mt-6" style="display: none;">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-2">Update Meter Readings</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Currently editing room: <span id="meter_room_display" class="font-medium text-blue-600 dark:text-blue-400"></span></p>
@@ -167,7 +310,7 @@
                         </div>
                     </form>
                 </div>
-            </div>
+            </div> --}}
 
             <script>
                 function select_this_room(roomNumber) {

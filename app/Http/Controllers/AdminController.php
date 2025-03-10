@@ -534,6 +534,51 @@ class AdminController extends Controller
         return redirect()->route('admin.settings')->with('success', 'รหัสผ่านถูกอัพเดทเรียบร้อยแล้ว');
     }
 
+    // public function index()
+    // {
+    //     // Get rooms with L and R prefixes
+    //     $Lrooms = Room::where('roomNumber', 'like', 'L%')->get();
+    //     $Rrooms = Room::where('roomNumber', 'like', 'R%')->get();
+
+    //     // Get current unit prices
+    //     $latestExpense = Expense::orderBy('created_at', 'desc')->first();
+    //     $unit_price_water = $latestExpense ? $latestExpense->unit_price_water : null;
+    //     $unit_price_electricity = $latestExpense ? $latestExpense->unit_price_electricity : null;
+
+
+    //     $check_in = $request->checkin ?? date('Y-m-d');
+    //     $check_out = $request->checkout ?? date('Y-m-d');
+
+    //     $bills = Bill::all();
+    //     $startDate = \Carbon\Carbon::parse($check_out)->subMonths(12)->startOfMonth();
+    //     $endDate = \Carbon\Carbon::parse($check_out)->endOfMonth();
+
+    //     $month_price = Bill::all();
+
+
+    //         $monthly_totals = [];
+    //         $month_date = [];
+
+    //         // สร้าง loop เพื่อรวมยอดตามเดือน
+    //         foreach ($month_price as $item) {
+    //             $month = Carbon::parse($item->BillDate)->format('Y-m');  // แปลงวันที่เป็น format 'ปี-เดือน'
+    //             $month_date[] = $month;
+
+    //             if (!isset($monthly_totals[$month])) {
+    //                 $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+    //             }
+
+    //             // บวกยอดราคาในเดือนนั้น
+    //             $monthly_totals[$month] += $item->total_price;
+    //         }
+    //         $month_date = array_unique($month_date);
+
+    //     // Get meter readings for all rooms
+    //     $meterReadings = MeterReading::with('meterdetails')->get();
+
+    //     return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings', 'monthly_totals', 'month_date'));
+    // }
+
     public function index()
     {
         // Get rooms with L and R prefixes
@@ -557,6 +602,7 @@ class AdminController extends Controller
 
 
             $monthly_totals = [];
+            $monthly_damage = [];
             $month_date = [];
 
             // สร้าง loop เพื่อรวมยอดตามเดือน
@@ -568,15 +614,20 @@ class AdminController extends Controller
                     $monthly_totals[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
                 }
 
+                if (!isset($monthly_damage[$month])) {
+                    $monthly_damage[$month] = 0;  // ถ้ายังไม่เคยมีเดือนนี้ใน array ให้สร้าง
+                }
+
                 // บวกยอดราคาในเดือนนั้น
                 $monthly_totals[$month] += $item->total_price;
+                $monthly_damage[$month] += $item->damage_fee;
             }
             $month_date = array_unique($month_date);
 
         // Get meter readings for all rooms
         $meterReadings = MeterReading::with('meterdetails')->get();
 
-        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings', 'monthly_totals', 'month_date'));
+        return view('admin', compact('Lrooms', 'Rrooms', 'unit_price_water', 'unit_price_electricity', 'meterReadings', 'monthly_totals', 'month_date','monthly_damage'));
     }
 
     public function updateUnitPrices(Request $request)

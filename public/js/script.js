@@ -11,7 +11,7 @@ function select_this_room(id) {
             // Display the room number in the UI
             document.getElementById("room_ID_select").innerHTML = data.room.roomNumber;
 
-            // Set the room number (not ID) for the booking forms
+            // Set the room ID for the booking forms
             document.getElementById("room_ID_select_monthly").value = data.room.roomNumber;
             document.getElementById("room_ID_select_daily").value = data.room.roomNumber;
 
