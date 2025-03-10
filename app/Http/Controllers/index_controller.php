@@ -36,7 +36,6 @@ public function index(Request $request){
         else{
             $room_id_that_has_been_taken = [];
         }
-
         return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out','room_id_that_has_been_taken'));
     }
 
@@ -209,4 +208,14 @@ public function index(Request $request){
         // <img src="{{ url('/contract/image/' . $contract->id) }}" alt="Contract Image">
 
 }
+    public function get_history_page(Request $request){
+        $telNum = $request->telNum ?? '0';
+        $tenant = Tenant::where('telNumber', $telNum)
+        ->join('bookings', 'tenants.tenantID', '=', 'bookings.tenant_id')
+        ->join('contracts', 'tenants.tenantID', '=', 'contracts.tenant_id')
+        ->select('tenants.*', 'bookings.*', 'contracts.*')
+        ->orderBy('bookings.created_at','desc')
+        ->get();
+        return view('history',compact('telNum','tenant'));
+    }
 }

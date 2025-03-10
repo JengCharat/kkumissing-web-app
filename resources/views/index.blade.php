@@ -32,6 +32,15 @@
 </head>
 
 <body class="bg-gray-100">
+
+<button onclick="openHistoryPage()">Go to History</button>
+
+<script>
+    function openHistoryPage() {
+        window.location.href = '/history';  // เปลี่ยนเส้นทางไปยังหน้า /history
+    }
+</script>
+
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Success Message -->
