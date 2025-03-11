@@ -51,7 +51,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">วราภรณ์ แมนชั่น</h3>
+                        <h3 class="text-lg font-semibold">วราภรณ์ แมนชั่น [จองรายเดือน โทร: 088-670-7555]</h3>
                         <div class="flex space-x-2">
                             <button onclick="openHistoryPage()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
                                 ประวัติการจอง
@@ -63,12 +63,76 @@
                     </div>
 
 <script>
+    // ฟังก์ชันตรวจสอบความถูกต้องของฟอร์มกรองวันที่
+    function validateDateFilter() {
+        const checkinDate = document.getElementById('filter_checkin').value;
+        const checkoutDate = document.getElementById('filter_checkout').value;
+
+        // ถ้าไม่ได้กรอกทั้งสองช่อง ให้แจ้งเตือน
+        if (!checkinDate || !checkoutDate) {
+            alert('กรุณากรอกวันที่เช็คอินและเช็คเอาท์ให้ครบถ้วน');
+            return false;
+        }
+
+        // ตรวจสอบว่าวันที่เช็คเอาท์มากกว่าวันที่เช็คอินหรือไม่
+        if (new Date(checkoutDate) <= new Date(checkinDate)) {
+            alert('วันที่เช็คเอาท์ต้องมากกว่าวันที่เช็คอิน');
+            return false;
+        }
+
+        return true;
+    }
+
     function openHistoryPage() {
         window.location.href = '/history';  // เปลี่ยนเส้นทางไปยังหน้า /history
     }
 
     // เก็บข้อมูลว่าห้องที่เลือกเป็นห้องของผู้เช่ารายเดือนหรือไม่
     let selectedMonthlyRoom = false;
+
+    // ฟังก์ชันคำนวณจำนวนวันและราคารวม
+    function calculateDaysAndPrice() {
+        const checkinDate = new Date(document.getElementById('daily_checkin').value);
+        const checkoutDate = new Date(document.getElementById('daily_checkout').value);
+
+        // ตรวจสอบว่าวันที่ถูกต้องหรือไม่
+        if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
+            document.getElementById('days_count').textContent = '-';
+            document.getElementById('total_price').textContent = '-';
+            return;
+        }
+
+        // ตรวจสอบว่าวันที่เช็คเอาท์มากกว่าวันที่เช็คอินหรือไม่
+        if (checkoutDate <= checkinDate) {
+            document.getElementById('days_count').textContent = 'วันที่ไม่ถูกต้อง';
+            document.getElementById('total_price').textContent = '-';
+            return;
+        }
+
+        // คำนวณจำนวนวัน
+        const diffTime = Math.abs(checkoutDate - checkinDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // แสดงจำนวนวัน
+        document.getElementById('days_count').textContent = diffDays + ' วัน';
+
+        // คำนวณราคารวม (สมมติว่าราคาต่อวันคือ 500 บาท)
+        const pricePerDay = 400;
+        const totalPrice = diffDays * pricePerDay;
+
+        // แสดงราคารวม
+        document.getElementById('total_price').textContent = totalPrice + ' บาท';
+    }
+
+    // ฟังก์ชันแสดง QR code
+    function show_qr() {
+        // แสดง QR code สำหรับทั้งฟอร์มรายวันและรายเดือน
+        const dailyQR = document.getElementById('qr_img_daily');
+        const monthlyQR = document.getElementById('qr_img_monthly');
+
+        if (dailyQR) dailyQR.style.display = 'block';
+        if (monthlyQR) monthlyQR.style.display = 'block';
+    }
 
     // ฟังก์ชันเดิมที่ถูกเรียกเมื่อเลือกห้อง
     function select_this_room(roomID) {
@@ -161,10 +225,10 @@
                         </div>
 
                         <div id="booking_schedule" class="mt-4">
-                            <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
+                            {{-- <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
                             <div id="booking_list" class="space-y-2">
                                 <!-- Booking entries will be populated here -->
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
 
@@ -348,7 +412,7 @@
                         <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                             <p class="text-md font-medium text-gray-700">ห้องที่เลือก: <span id="room_display_daily" class="font-bold text-blue-600 text-lg"></span></p>
                         </div>
-                        <form method="POST" action="/hire" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('hire') }}" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <input type="hidden" name="roomNumber" id="room_ID_select_daily" value="">
                             <input type="hidden" name="tenant_type" value="daily">
@@ -386,7 +450,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">การชำระเงิน</label>
                                 <div class="flex space-x-2">
                                     <button type="button" onclick="show_qr()" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">QR Code</button>
-                                    <button type="button" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">เงินสด</button>
+                                    {{-- <button type="button" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">เงินสด</button> --}}
                                 </div>
                                 <img style="display:none;" src="{{asset('images/rickroll.png')}}" alt="qr img" id="qr_img_daily" class="mt-2 max-w-xs">
                             </div>
