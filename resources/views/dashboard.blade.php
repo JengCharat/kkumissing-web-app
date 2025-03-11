@@ -45,6 +45,13 @@
                         @elseif($bill)
                             <p class="text-2xl font-bold text-blue-800">
                                 ฿ {{ number_format($bill->water_price + $bill->electricity_price + $bill->room_rate + $bill->damage_fee + $bill->overdue_fee, 2) }}</p>
+
+                            <!-- QR Code for payment -->
+                            <div class="mb-4 text-center">
+                                <p class="text-sm text-gray-600 mb-2">สแกน QR code เพื่อชำระเงิน</p>
+                                <img src="{{ asset('images/qrcode-payment.png') }}" alt="QR Code Payment" class="mx-auto h-48 w-auto">
+                            </div>
+
                             <form method="post" action="/dashboard/upload_slip" enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="roomID" value="{{$rooms->roomID}}">
