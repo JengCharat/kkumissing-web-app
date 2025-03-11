@@ -273,7 +273,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">เอกสารสัญญา</p>
-                    <div id="contract_file_container" class="mt-2">
+                    <div id="contract_file_container" class="mt-2 max-h-80 overflow-y-auto">
                         <img id="contract_file_image" src="" alt="เอกสารสัญญา" class="max-w-full h-auto rounded-lg shadow-md hidden">
                         <p id="no_contract_file" class="text-base text-gray-900 dark:text-gray-100">ไม่มีเอกสารสัญญา</p>
                     </div>

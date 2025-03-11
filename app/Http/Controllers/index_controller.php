@@ -36,7 +36,13 @@ public function index(Request $request){
         else{
             $room_id_that_has_been_taken = [];
         }
-        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out','room_id_that_has_been_taken'));
+
+        // Get rooms booked by monthly tenants (added by admin)
+        $monthly_tenant_rooms = Booking::where('booking_type', 'monthly')
+            ->pluck('room_id')
+            ->toArray();
+
+        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out', 'room_id_that_has_been_taken', 'monthly_tenant_rooms'));
     }
 
     public function getRoomBookings($roomId) {
