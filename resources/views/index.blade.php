@@ -25,6 +25,10 @@
             background-color: #ef4444;
             color: white;
         }
+        .monthly-tenant {
+            background-color: #3b82f6;
+            color: white;
+        }
         .available:hover {
             background-color: #059669;
         }
@@ -32,15 +36,6 @@
 </head>
 
 <body class="bg-gray-100">
-
-<button onclick="openHistoryPage()">Go to History</button>
-
-<script>
-    function openHistoryPage() {
-        window.location.href = '/history';  // เปลี่ยนเส้นทางไปยังหน้า /history
-    }
-</script>
-
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Success Message -->
@@ -57,10 +52,65 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">วราภรณ์ แมนชั่น</h3>
-                        <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            ไปที่แดชบอร์ด
-                        </a>
+                        <div class="flex space-x-2">
+                            <button onclick="openHistoryPage()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                ประวัติการจอง
+                            </button>
+                            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                ไปที่แดชบอร์ด
+                            </a>
+                        </div>
                     </div>
+
+<script>
+    function openHistoryPage() {
+        window.location.href = '/history';  // เปลี่ยนเส้นทางไปยังหน้า /history
+    }
+
+    // เก็บข้อมูลว่าห้องที่เลือกเป็นห้องของผู้เช่ารายเดือนหรือไม่
+    let selectedMonthlyRoom = false;
+
+    // ฟังก์ชันเดิมที่ถูกเรียกเมื่อเลือกห้อง
+    function select_this_room(roomID) {
+        // เก็บค่า roomID ไว้ใน input hidden
+        document.getElementById('room_ID_select2').value = roomID;
+
+        // ตรวจสอบว่าห้องที่เลือกเป็นห้องของผู้เช่ารายเดือนหรือไม่
+        const roomButton = document.querySelector(`button[onclick="select_this_room('${roomID}')"]`);
+        selectedMonthlyRoom = roomButton && roomButton.hasAttribute('data-monthly');
+
+        // แสดงหมายเลขห้องที่เลือก
+        const roomNumber = roomButton ? roomButton.textContent.trim() : '';
+        document.getElementById('room_ID_select').textContent = roomNumber;
+
+        // แสดงรายละเอียดห้อง
+        document.getElementById('room_details').classList.remove('hidden');
+    }
+
+    // แทนที่ฟังก์ชัน daily_form เดิม
+    function daily_form() {
+        // ตรวจสอบว่าได้เลือกห้องหรือไม่
+        if (document.getElementById('room_ID_select2').value === '') {
+            alert('กรุณาเลือกห้องก่อน');
+            return;
+        }
+
+        // ตรวจสอบว่าเป็นห้องของผู้เช่ารายเดือนหรือไม่
+        if (selectedMonthlyRoom) {
+            alert('ห้องนี้ถูกจองโดยผู้เช่ารายเดือนแล้ว ไม่สามารถจองได้');
+            return;
+        }
+
+        // ดำเนินการต่อหากไม่ใช่ห้องของผู้เช่ารายเดือน
+        const roomNumber = document.getElementById('room_ID_select').textContent;
+        document.getElementById('room_display_daily').textContent = roomNumber;
+        document.getElementById('room_ID_select_daily').value = document.getElementById('room_ID_select2').value;
+
+        // ซ่อนฟอร์มรายเดือน และแสดงฟอร์มรายวัน
+        document.getElementById('monthly_form').style.display = 'none';
+        document.getElementById('daily_form').style.display = 'block';
+    }
+</script>
 
                     <!-- Date Filter -->
                     <div class="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -94,6 +144,22 @@
                         <h4 class="text-md font-medium mb-2">รายละเอียดห้อง</h4>
                         <p class="mb-2">ประเภท: ห้องแอร์พร้อมเตียง ตู้เย็น และห้องน้ำ</p>
 
+                        <!-- Room Images Section -->
+                        <div class="mt-4 mb-4">
+                            <h5 class="text-sm font-medium mb-2">รูปภาพห้อง</h5>
+                            <div class="grid grid-cols-3 gap-2" id="room_images">
+                                <div class="aspect-w-16 aspect-h-9">
+                                    <img src="{{ asset('storage/rooms/room_image_1.jpg') }}" alt="Room Image 1" class="object-cover rounded-md w-full h-full">
+                                </div>
+                                <div class="aspect-w-16 aspect-h-9">
+                                    <img src="{{ asset('storage/rooms/room_image_2.jpg') }}" alt="Room Image 2" class="object-cover rounded-md w-full h-full">
+                                </div>
+                                <div class="aspect-w-16 aspect-h-9">
+                                    <img src="{{ asset('storage/rooms/room_image_3.jpg') }}" alt="Room Image 3" class="object-cover rounded-md w-full h-full">
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="booking_schedule" class="mt-4">
                             <h5 class="text-sm font-medium mb-2">ตารางการจอง</h5>
                             <div id="booking_list" class="space-y-2">
@@ -112,11 +178,18 @@
                                 @php
                                     // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
                                     $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                    // ตรวจสอบว่าเป็นห้องที่จองโดยผู้เช่ารายเดือนหรือไม่
+                                    $isMonthlyTenant = in_array($item->roomID, $monthly_tenant_rooms ?? []);
                                 @endphp
 
                                 @if (!$isBooked)
                                     <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
                                     <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button available">
+                                        {{ $item->roomNumber }}
+                                    </button>
+                                @elseif ($isMonthlyTenant)
+                                    <!-- ปุ่มสำหรับห้องที่จองโดยผู้เช่ารายเดือน -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button monthly-tenant" data-monthly="true">
                                         {{ $item->roomNumber }}
                                     </button>
                                 @else
@@ -162,11 +235,18 @@
                                 @php
                                     // ตรวจสอบว่า roomID นี้อยู่ใน list ของ room_id_that_has_been_taken
                                     $isBooked = in_array($item->roomID, $room_id_that_has_been_taken);
+                                    // ตรวจสอบว่าเป็นห้องที่จองโดยผู้เช่ารายเดือนหรือไม่
+                                    $isMonthlyTenant = in_array($item->roomID, $monthly_tenant_rooms ?? []);
                                 @endphp
 
                                 @if (!$isBooked)
                                     <!-- ปุ่มสำหรับห้องที่ว่างและยังไม่ถูกจอง -->
                                     <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button available">
+                                        {{ $item->roomNumber }}
+                                    </button>
+                                @elseif ($isMonthlyTenant)
+                                    <!-- ปุ่มสำหรับห้องที่จองโดยผู้เช่ารายเดือน -->
+                                    <button onclick="select_this_room('{{ $item->roomID }}')" class="room-button monthly-tenant" data-monthly="true">
                                         {{ $item->roomNumber }}
                                     </button>
                                 @else
