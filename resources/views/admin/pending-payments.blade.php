@@ -69,7 +69,7 @@
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ $bill->status }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2" onclick="viewBillDetails({{ $bill->BillNo }})">ดูรายละเอียด</button>
+                                        {{-- <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2" onclick="viewBillDetails({{ $bill->BillNo }})">ดูรายละเอียด</button> --}}
                                         <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" onclick="markAsPaid({{ $bill->BillNo }})">บันทึกชำระเงิน</button>
                                     </td>
                                 </tr>

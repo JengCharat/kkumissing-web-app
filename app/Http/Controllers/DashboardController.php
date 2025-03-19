@@ -104,4 +104,46 @@ class DashboardController extends Controller
             return view('admin.receipt', compact('bill'));
         }
 
+
+
+
+     function upload_slip(Request $request){
+            $bills = Bill::where('roomID', $request->roomID)
+            ->orderBy('created_at', 'desc')  // Assuming you want to order by the creation time
+            ->first();  // Get the first (most recent) record
+
+            if (!$bill) {
+                return redirect('dashboard')->with('error', 'Bill not found');
+            }
+
+            $request->validate([
+                'slip_image' => 'required|image|mimes:jpeg,png,jpg,gif',
+            ]);
+
+            $file = $request->file('slip_image');
+
+            // Generate a unique filename with timestamp
+            $filename = 'slip-image-' . date('Ymd-His') . '-' . $bill->BillNo . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('slips', $filename, 'public');
+
+            // Update bill status and slip file path
+            $bill->status = "ชำระแล้ว";
+            $bill->slip_file = $path;
+            $bill->save();
+
+            $status = $bill->status;
+            return redirect('dashboard')->with('status', $status);
+        }
+
+        public function printReceipt($billId)
+        {
+            $bill = Bill::with(['room', 'tenant'])->find($billId);
+            if (!$bill) {
+                return redirect()->back()->with('error', 'Bill not found');
+            }
+
+            // Return a view with the receipt
+            return view('admin.receipt', compact('bill'));
+        }
+
 }

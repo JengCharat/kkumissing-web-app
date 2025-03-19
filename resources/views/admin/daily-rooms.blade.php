@@ -141,7 +141,7 @@
                                         <button onclick="select_this_room('{{ $item->roomID }}')"
                                                 class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
                                             {{ $item->roomNumber }}
-                                            <h1>this is monthly room</h1>
+                                            <h1>ห้องนี้ถูกจองรายเดือนแล้ว</h1>
                                         </button>
                                     @endif
                                 @endforeach
@@ -216,7 +216,7 @@
                                         <button onclick="select_this_room('{{ $item->roomID }}')"
                                                 class="p-2 text-center rounded bg-blue-500 hover:bg-blue-600">
                                             {{ $item->roomNumber }}
-                                            <h1>this is monthly room</h1>
+                                            <h1>ห้องนี้ถูกจองรายเดือนแล้ว</h1>
                                         </button>
                                     @endif
                                 @endforeach
@@ -273,6 +273,11 @@
                                 <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
                             </div> --}}
 
+                            {{-- <div>
+                                <x-label for="deposit" value="เงินมัดจำ" />
+                                <x-input id="deposit" name="deposit" type="number" min="0" class="block mt-1 w-full" value="0" required />
+                            </div> --}}
+
                             <div>
                                 <x-label value="การชำระเงิน" />
                                 <div class="flex space-x-2 mt-1">
@@ -284,7 +289,7 @@
 
                             <div>
                                 <x-label for="img" value="อัพโหลดสลิป" />
-                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1">
+                                <input type="file" name="img" id="img" class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1" required>
                             </div>
 
                             <div class="flex justify-end mt-4">
@@ -298,131 +303,9 @@
                         </form>
                     </div>
                 </div>
+
+                <script src="{{ asset('js/daily-rooms.js') }}"></script>
             </div>
-
-            <script>
-                function select_this_room(roomId) {
-                    // Fetch the room details to get the room number
-                    fetch(`/room-bookings/${roomId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            // Display the room number in the UI
-                            document.getElementById("room_ID_select").innerHTML = data.room.roomNumber;
-                            document.getElementById("selected_room_number").textContent = data.room.roomNumber;
-
-                            // Set the room number for the booking form
-                            document.getElementById("room_ID_select_daily").value = data.room.roomNumber;
-                            document.getElementById("room_ID_select2").value = data.room.roomNumber;
-
-                            // Show room details section
-                            document.getElementById("room_details").classList.remove("hidden");
-
-                            // Display bookings
-                            displayBookings(data.bookings);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching room details:', error);
-                        });
-                }
-
-                function displayBookings(bookings) {
-                    const bookingList = document.getElementById('booking_list');
-                    bookingList.innerHTML = '';
-
-                    if (bookings.length === 0) {
-                        bookingList.innerHTML = '<p class="text-gray-500">ไม่พบการจองสำหรับห้องนี้</p>';
-                        return;
-                    }
-
-                    bookings.forEach(booking => {
-                        const bookingItem = document.createElement('div');
-                        bookingItem.className = 'p-2 border border-gray-200 rounded';
-
-                        const checkIn = new Date(booking.check_in).toLocaleDateString('th-TH');
-                        const checkOut = new Date(booking.check_out).toLocaleDateString('th-TH');
-
-                        // Convert booking type to Thai
-                        let bookingType = booking.booking_type;
-                        if (bookingType === 'daily') {
-                            bookingType = 'รายวัน';
-                        } else if (bookingType === 'monthly') {
-                            bookingType = 'รายเดือน';
-                        }
-
-                        bookingItem.innerHTML = `
-                            <p class="text-sm"><span class="font-medium">รหัสการจอง:</span> ${booking.bookingID}</p>
-                            <p class="text-sm"><span class="font-medium">ประเภท:</span> ${bookingType}</p>
-                            <p class="text-sm"><span class="font-medium">ระยะเวลา:</span> ${checkIn} ถึง ${checkOut}</p>
-                        `;
-
-                        bookingList.appendChild(bookingItem);
-                    });
-                }
-
-                function showBookingForm() {
-                    // Get the selected room ID
-                    const selectedRoomId = document.getElementById('room_ID_select2').value;
-
-                    // Check if a room is selected
-                    if (!selectedRoomId) {
-                        alert('กรุณาเลือกห้องก่อนทำการจอง');
-                        return;
-                    }
-
-                    // Check if the room is already booked (red or blue)
-                    const roomElement = document.querySelector(`button[onclick="select_this_room('${selectedRoomId}')"]`);
-                    if (roomElement && (roomElement.classList.contains('bg-red-500') || roomElement.classList.contains('bg-blue-500'))) {
-                        alert('ห้องนี้ถูกจองแล้ว ไม่สามารถจองได้');
-                        return;
-                    }
-
-                    document.getElementById('booking_form').style.display = 'block';
-
-                    // Use filter dates if available, otherwise use today and tomorrow
-                    const checkInInput = document.querySelector('input[name="check_in"]');
-                    const checkOutInput = document.querySelector('input[name="check_out"]');
-
-                    if (checkInInput && checkInInput.value) {
-                        document.getElementById('checkin').value = checkInInput.value;
-                    } else {
-                        const today = new Date();
-                        document.getElementById('checkin').value = formatDate(today);
-                    }
-
-                    if (checkOutInput && checkOutInput.value) {
-                        document.getElementById('checkout').value = checkOutInput.value;
-                    } else {
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        document.getElementById('checkout').value = formatDate(tomorrow);
-                    }
-                }
-
-                function hideBookingForm() {
-                    document.getElementById('booking_form').style.display = 'none';
-                }
-
-                function formatDate(date) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                }
-
-                function show_qr() {
-                    var qrImg = document.getElementById("qr_img");
-                    if (qrImg.style.display === "none") {
-                        qrImg.style.display = "block";
-                    } else {
-                        qrImg.style.display = "none";
-                    }
-                }
-            </script>
         </div>
     </div>
 </x-admin-layout>

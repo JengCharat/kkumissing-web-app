@@ -37,7 +37,12 @@ public function index(Request $request){
             $room_id_that_has_been_taken = [];
         }
 
-        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out','room_id_that_has_been_taken'));
+        // Get rooms booked by monthly tenants (added by admin)
+        $monthly_tenant_rooms = Booking::where('booking_type', 'monthly')
+            ->pluck('room_id')
+            ->toArray();
+
+        return view('index', compact('Lrooms', 'Rrooms', 'bookings', 'check_in', 'check_out', 'room_id_that_has_been_taken', 'monthly_tenant_rooms'));
     }
 
     public function getRoomBookings($roomId) {
@@ -54,9 +59,23 @@ public function index(Request $request){
     //         'roomNumber' => $request->roomNumber,
     //     ]);
     public function hire(Request $request){
-        $roomNumber = $request->roomNumber;
-        $room = Room::where('roomNumber', $roomNumber)->firstOrFail();
+        // Check if roomNumber is a room ID or a room number
+        $roomInput = $request->roomNumber;
 
+        // Try to find by roomID first (in case it's an ID)
+        
+        $room = Room::where('roomID', $roomInput)->first();
+
+        // If not found by ID, try to find by roomNumber
+        if (!$room) {
+            $room = Room::where('roomNumber', $roomInput)->first();
+        }
+        
+        // If still not found, return 404
+        if (!$room) {
+            abort(404, 'Room not found with ID or number: ' . $roomInput);
+        }
+        
         // Check if room is available
         // if($room->status == "Not Available"){
         //     return redirect()->back()->with('error', 'ห้องไม่ว่าง กรุณาเลือกห้องอื่น');
@@ -82,27 +101,29 @@ public function index(Request $request){
         $tenant->tenantName = $request->tenantName;
         $tenant->tenant_type = $request->tenant_type;
 
-        if($request->tenant_type == "monthly"){
-            // For monthly tenants, use the room's user
-            $users = User::where('name', $request->roomNumber)->first();
-            $tenant->user_id_tenant = $users->id;
-            $users->password = bcrypt($request->tenantTel);
-            $users->save();
-        } else {
-            // For daily tenants, use the room's user just like monthly tenants
-            $users = User::where('name', $request->roomNumber)->first();
-            if (!$users) {
-                abort(500, 'User for this room not found');
-            }
-            $tenant->user_id_tenant = $users->id;
-            // Set password only if it's a new user or needs updating
-            if (!$request->tenantTel) {
-                abort(400, 'Tenant phone number is required');
-            }
-            $users->password = bcrypt($request->tenantTel);
-            $users->save();
-        }
-
+        // if($request->tenant_type == "monthly"){
+        //     // For monthly tenants, use the room's user
+        //     $users = User::where('name', $request->roomNumber)->first();
+        //     $tenant->user_id_tenant = $users->id;
+        //     $users->password = bcrypt($request->tenantTel);
+        //     $users->save();
+        // } else {
+        //     // For daily tenants, use the room's user just like monthly tenants
+        //     $users = User::where('name', $request->roomNumber)->first();
+        //     if (!$users) {
+        //         abort(500, 'User for this room not found');
+        //     }
+        //     $tenant->user_id_tenant = $users->id;
+        //     // // Set password only if it's a new user or needs updating
+        //     if (!$request->tenantTel) {
+        //         abort(400, 'Tenant phone number is required');
+        //     }
+        //     $users->password = bcrypt($request->tenantTel);
+        //     $users->save();
+        // }
+        //return view('index');
+        
+        $tenant->user_id_tenant = $request->roomNumber;
         $tenant->telNumber = $request->tenantTel;
         $tenant->save(); // บันทึกข้อมูลลงในตาราง
 
@@ -198,6 +219,10 @@ public function index(Request $request){
 
         $booking->save();
 
+        // Check if the user is an admin and redirect accordingly
+        if (auth()->check() && auth()->user()->usertype === 'admin') {
+            return redirect()->route('admin.daily-tenants')->with('success', 'เพิ่มการจองห้องพักรายวันเรียบร้อยแล้ว');
+        }
 
         // Check if the user is an admin and redirect accordingly
         if (auth()->check() && auth()->user()->usertype === 'admin') {
@@ -221,4 +246,14 @@ public function index(Request $request){
         // <img src="{{ url('/contract/image/' . $contract->id) }}" alt="Contract Image">
 
 }
+    public function get_history_page(Request $request){
+        $telNum = $request->telNum ?? '0';
+        $tenant = Tenant::where('telNumber', $telNum)
+        ->join('bookings', 'tenants.tenantID', '=', 'bookings.tenant_id')
+        ->join('contracts', 'tenants.tenantID', '=', 'contracts.tenant_id')
+        ->select('tenants.*', 'bookings.*', 'contracts.*')
+        ->orderBy('bookings.created_at','desc')
+        ->get();
+        return view('history',compact('telNum','tenant'));
+    }
 }

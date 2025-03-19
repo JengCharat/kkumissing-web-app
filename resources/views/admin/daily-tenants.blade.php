@@ -33,9 +33,9 @@
                                     </svg>
                                 </div> --}}
                             </div>
-                            <x-button onclick="showAddBookingForm()">
+                            {{-- <x-button onclick="showAddBookingForm()">
                                 + เพิ่มการจอง
-                            </x-button>
+                            </x-button> --}}
                         </div>
                     </div>
 

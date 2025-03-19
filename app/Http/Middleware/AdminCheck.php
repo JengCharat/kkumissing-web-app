@@ -33,6 +33,6 @@ class AdminCheck
         }
 
         // Default fallback for any other user types
-        return redirect('dashboard');
+        return redirect('index');
     }
 }
