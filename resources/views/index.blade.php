@@ -419,11 +419,21 @@
 
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คอิน</label>
-                                <input disabled type="date" name="checkin" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                                <input type="date" name="checkin" id="daily_checkin" value="{{ $check_in ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required onchange="calculateDaysAndPrice()">
                             </div>
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">เช็คเอาท์</label>
-                                <input disabled type ="date" name="checkout" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                                <input type="date" name="checkout" id="daily_checkout" value="{{ $check_out ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" required onchange="calculateDaysAndPrice()">
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนวัน</label>
+                                <div id="days_count" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">-</div>
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ราคารวม</label>
+                                <div id="total_price" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">-</div>
                             </div>
 
                             <div>
